@@ -911,43 +911,52 @@
             background: rgba(255, 255, 255, .05) !important
         }
 
-        /* ── Company accent bar ── */
+        /* ── Company accent bar ──────────────────────────────
+           • Flat rectangle, no border-radius, no gradient
+           • Joint (CTB+KMB) is the ONE allowed gradient:
+             top half yellow, bottom half red (hard stop)
+        ──────────────────────────────────────────────────── */
         .row-accent {
             position: absolute;
             left: 0;
             top: 0;
             bottom: 0;
             width: 8px;
-            /* wider than before */
-            border-radius: 0 4px 4px 0
+            border-radius: 0;
+            /* sharp rectangle */
         }
 
-        /* Color = bus company only, no route-type variants */
         .row-accent.accent-ctb {
-            background: linear-gradient(180deg, #FFE033, #F9A825)
+            background: #F9A825
         }
 
-        /* CTB / NWFB : yellow */
+        /* CTB / NWFB — amber yellow  */
         .row-accent.accent-kmb {
-            background: linear-gradient(180deg, #EF5350, #B71C1C)
+            background: #D32F2F
         }
 
-        /* KMB        : red   */
+        /* KMB        — red           */
         .row-accent.accent-lwb {
-            background: linear-gradient(180deg, #FFA726, #E65100)
+            background: #E65100
         }
 
-        /* LWB        : orange*/
+        /* LWB        — deep orange   */
         .row-accent.accent-nlb {
-            background: linear-gradient(180deg, #66BB6A, #2E7D32)
+            background: #388E3C
         }
 
-        /* NLB        : green */
+        /* NLB        — green         */
         .row-accent.accent-mtr {
-            background: linear-gradient(180deg, #78909C, #455A64)
+            background: #546E7A
         }
 
-        /* MTR        : grey  */
+        /* MTR        — blue-grey     */
+        /* Joint: hard two-tone split (yellow top / red bottom) */
+        .row-accent.accent-joint {
+            background: linear-gradient(180deg,
+                    #F9A825 0%, #F9A825 50%,
+                    #D32F2F 50%, #D32F2F 100%);
+        }
 
         .route-cell {
             display: flex;
@@ -1645,10 +1654,10 @@
         let selectedDirection = null;
         let selectedCompany = 'CTB';
         let isFullscreenMode = false;
-        const renderedRows = new Map(); // Map<stopKey, { element }>
+        const renderedRows = new Map();
 
         /* ═══════════════════════════════════════════
-           HELPERS
+           UTILITIES
         ═══════════════════════════════════════════ */
         function isLwbRoute(r) {
             r = r.toUpperCase();
@@ -1660,19 +1669,20 @@
             return `${sd.company}||${rid}||${sd.stopId}||${dir}`;
         }
 
-        /* ── Accent bar: company color only ── */
-        function getAccentClass(company) {
+        /* ── Accent bar: company color, joint gets two-tone ── */
+        function getAccentClass(company, isJoint) {
+            if (isJoint) return 'accent-joint';
             switch ((company || '').toUpperCase()) {
-                case 'CTB': case 'NWFB': return 'accent-ctb';   // yellow
-                case 'KMB': return 'accent-kmb';   // red
-                case 'LWB': return 'accent-lwb';   // orange
-                case 'NLB': return 'accent-nlb';   // green
-                case 'MTR': return 'accent-mtr';   // grey
+                case 'CTB': case 'NWFB': return 'accent-ctb';
+                case 'KMB': return 'accent-kmb';
+                case 'LWB': return 'accent-lwb';
+                case 'NLB': return 'accent-nlb';
+                case 'MTR': return 'accent-mtr';
                 default: return 'accent-ctb';
             }
         }
 
-        /* ── Route number color (keeps existing logic) ── */
+        /* ── Route number color class (unchanged logic) ── */
         function getRouteColorClass(rn, co) {
             const r = rn.toUpperCase(), c = (co || '').toUpperCase();
             if (c === 'LWB' || (c === 'KMB' && isLwbRoute(r))) return 'route-co-lwb';
@@ -1814,9 +1824,7 @@
         }
 
         /* ═══════════════════════════════════════════
-           ETA HTML BUILDER
-           Always called fresh — no caching.
-           Sorts all items by arrival time, renders up to 4.
+           ETA HTML — always rebuilt fresh every cycle
         ═══════════════════════════════════════════ */
         function buildEtaHtml(etaItems) {
             const now = Date.now();
@@ -1857,7 +1865,7 @@
         }
 
         /* ═══════════════════════════════════════════
-           COMPANY CELL / LOGO
+           LOGO / COMPANY CELL
         ═══════════════════════════════════════════ */
         async function buildSingleLogoEl(co) {
             const url = COMPANY_LOGOS[co];
@@ -1897,7 +1905,6 @@
             const isNlb = sd.company === 'NLB';
             const isJoint = !isNlb && JOINT_ROUTES.has(sd.routeId.toUpperCase());
 
-            // Display company: LWB routes under KMB banner become LWB
             let dCo = sd.company;
             if (dCo === 'KMB' && isLwbRoute(sd.routeId)) dCo = 'LWB';
 
@@ -1905,20 +1912,16 @@
             row.className = 'bus-row' + (animateIn ? ' row-enter' : '');
             row.dataset.stopKey = stopKey;
 
-            // Drag handle
             const dh = document.createElement('div');
             dh.className = 'drag-handle'; dh.innerHTML = '⠿'; dh.title = '拖動以重新排序';
 
-            // ── Accent bar: color = company only ──
+            // Accent bar: company color (or joint two-tone)
             const acc = document.createElement('div');
-            // For joint routes treated as CTB (yellow); otherwise use actual company
-            acc.className = 'row-accent ' + getAccentClass(isJoint ? 'CTB' : dCo);
+            acc.className = 'row-accent ' + getAccentClass(dCo, isJoint);
 
-            // Route number
             const rd = document.createElement('div');
             rd.innerHTML = `<div class="route-cell ${getRouteColorClass(sd.routeId, dCo)}"><span class="route-number">${sd.routeId}</span></div>`;
 
-            // Destination / stop name
             const destTc = etaItems.find(e => e.dest_tc)?.dest_tc || sd.nlbDest || '--';
             const pri = stopNames.primary || { name_tc: '--', name_en: '' };
             const alt = stopNames.alt;
@@ -1928,14 +1931,11 @@
             if (alt?.name_tc) sh += `<div class="stop-name-alt"><span class="alt-badge">${getCompanyName(alt.co)}</span>${alt.name_tc}</div>`;
             sc.innerHTML = sh;
 
-            // Company logo cell
             const cd = await buildCompanyCell(dCo, isJoint);
 
-            // ETA cell — overwritten on every refresh
             const ed = document.createElement('div'); ed.className = 'eta-cell';
             ed.innerHTML = buildEtaHtml(etaItems);
 
-            // Remove button
             const rm = document.createElement('div'); rm.className = 'remove-cell';
             rm.innerHTML = `<button class="row-remove-btn" title="移除此站點">✕</button>`;
             rm.querySelector('button').onclick = e => { e.stopPropagation(); removeStopByKey(stopKey); };
@@ -1959,12 +1959,8 @@
         /* ═══════════════════════════════════════════
            API FETCHERS
         ═══════════════════════════════════════════ */
-        async function fetchCtbEta(s, r) {
-            try { const res = await fetch(API.CTB.eta(s, r)); if (!res.ok) return []; const d = await res.json(); return (d.data || []).map(x => ({ ...x, co: x.co || 'CTB' })); } catch { return []; }
-        }
-        async function fetchKmbEta(s, r, st) {
-            try { const res = await fetch(API.KMB.eta(s, r, st || 1)); if (!res.ok) return []; const d = await res.json(); return (d.data || []).map(x => ({ ...x, co: x.co || 'KMB' })); } catch { return []; }
-        }
+        async function fetchCtbEta(s, r) { try { const res = await fetch(API.CTB.eta(s, r)); if (!res.ok) return []; const d = await res.json(); return (d.data || []).map(x => ({ ...x, co: x.co || 'CTB' })); } catch { return []; } }
+        async function fetchKmbEta(s, r, st) { try { const res = await fetch(API.KMB.eta(s, r, st || 1)); if (!res.ok) return []; const d = await res.json(); return (d.data || []).map(x => ({ ...x, co: x.co || 'KMB' })); } catch { return []; } }
         async function fetchNlbEta(s, rid, rno, nd) {
             try {
                 const res = await fetch(API.NLB.eta(s, rid)); if (!res.ok) return []; const d = await res.json();
@@ -1992,8 +1988,6 @@
 
         /* ═══════════════════════════════════════════
            CORE FETCH & RENDER
-           • Always overwrite every eta-cell on every cycle
-           • No signature comparison, no sub-key grouping
         ═══════════════════════════════════════════ */
         async function fetchMultiETA() {
             if (!currentStops.length) { showMessage('⚠️', '請先選擇路線及巴士站', '按「選擇路線 / 巴士站」按鈕開始。'); setStatus('error', '尚未選擇'); return; }
@@ -2023,12 +2017,10 @@
                 if (container.querySelector('.message-container')) { container.innerHTML = ''; renderedRows.clear(); }
 
                 const seenKeys = new Set();
-
                 for (const { sd, stopNames, etaItems } of results) {
                     const key = makeStopKey(sd);
                     seenKeys.add(key);
                     if (renderedRows.has(key)) {
-                        // Always overwrite ETA cell completely
                         const rowEl = renderedRows.get(key).element;
                         const etaCell = rowEl.querySelector('.eta-cell');
                         if (etaCell) {
@@ -2045,7 +2037,6 @@
                     }
                 }
 
-                // Remove stale rows
                 for (const [key, data] of renderedRows) {
                     if (!seenKeys.has(key)) { data.element.remove(); renderedRows.delete(key); }
                 }
@@ -2065,7 +2056,7 @@
         }
 
         /* ═══════════════════════════════════════════
-           UI
+           UI ACTIONS
         ═══════════════════════════════════════════ */
         function toggleFullscreenMode() {
             isFullscreenMode = !isFullscreenMode;
