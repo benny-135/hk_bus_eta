@@ -1529,25 +1529,19 @@
             </div>
         </div>
     </div>
-
     <div class="controls">
         <button class="btn-secondary" type="button" onclick="openStopSelector()">選擇路線 / 巴士站</button>
         <button class="btn-secondary" type="button" onclick="clearAllStops()" id="clearBtn"
             style="display:none;">清除所有站點</button>
         <button class="btn-search" onclick="manualRefresh()">查詢 / 重新整理</button>
     </div>
-
     <div class="status-bar">
         <div class="status-indicator">
             <div class="status-dot" id="statusDot"></div><span id="statusText">等待查詢...</span>
         </div>
-        <div>
-            <span id="lastUpdate">最後更新：--</span>&nbsp;|&nbsp;
-            <span>自動更新：每15秒</span>&nbsp;|&nbsp;
-            <span id="recordCount">顯示 0 條記錄</span>
-        </div>
+        <div><span id="lastUpdate">最後更新：--</span>&nbsp;|&nbsp;<span>自動更新：每15秒</span>&nbsp;|&nbsp;<span
+                id="recordCount">顯示 0 條記錄</span></div>
     </div>
-
     <div class="table-header">
         <div></div>
         <div>路線</div>
@@ -1556,7 +1550,6 @@
         <div>預計到站</div>
         <div></div>
     </div>
-
     <div class="bus-rows-container" id="busRowsContainer">
         <div class="message-container">
             <div class="icon">🔍</div>
@@ -1612,15 +1605,10 @@
     </div>
 
     <script>
-        /* ═══════════════════════════════════════════════════════════
-           CONSTANTS
-           ═══════════════════════════════════════════════════════════ */
-        const JOINT_ROUTES = new Set([
-            '101', '102', '104', '105', '106', '107', '108', '109', '110', '111', '112',
-            '113', '115', '116', '118', 'N121', '170', '171', '182', '182P', 'N182',
-            '307', '307P', 'N307', '619', '680', '681', '682', '690'
-        ]);
-
+        /* ═══════════════════════════════════════════
+           CONSTANTS & CONFIG
+        ═══════════════════════════════════════════ */
+        const JOINT_ROUTES = new Set(['101', '102', '104', '105', '106', '107', '108', '109', '110', '111', '112', '113', '115', '116', '118', 'N121', '170', '171', '182', '182P', 'N182', '307', '307P', 'N307', '619', '680', '681', '682', '690']);
         const COMPANY_LOGOS = {
             CTB: 'https://www.citybus.com.hk/_common/images/logo.png',
             KMB: 'https://upload.wikimedia.org/wikipedia/en/thumb/b/b4/KowloonMotorBus.svg/3840px-KowloonMotorBus.svg.png',
@@ -1629,25 +1617,6 @@
             MTR: 'https://upload.wikimedia.org/wikipedia/en/thumb/b/b9/HK_MTR_logo.svg/960px-HK_MTR_logo.svg.png',
             NWFB: 'https://www.citybus.com.hk/_common/images/logo.png'
         };
-
-        const logoLoadCache = {};
-        function testLogoUrl(url) {
-            if (url in logoLoadCache) return Promise.resolve(logoLoadCache[url]);
-            return new Promise(r => {
-                const i = new Image();
-                i.onload = () => { logoLoadCache[url] = true; r(true); };
-                i.onerror = () => { logoLoadCache[url] = false; r(false); };
-                i.src = url;
-            });
-        }
-        Object.values(COMPANY_LOGOS).forEach(u => testLogoUrl(u));
-
-        const LWB_ROUTE_PREFIXES = ['A', 'B', 'E', 'R', 'S'];
-        function isLwbRoute(r) {
-            r = r.toUpperCase();
-            return LWB_ROUTE_PREFIXES.some(p => r.startsWith(p) && /^[A-Z]\d/.test(r));
-        }
-
         const API = {
             CTB: {
                 routeList: 'https://rt.data.gov.hk/v2/transport/citybus/route/CTB',
@@ -1667,64 +1636,76 @@
                 eta: (s, rid) => `https://rt.data.gov.hk/v2/transport/nlb/stop.php?action=estimatedArrivals&routeId=${rid}&stopId=${s}&language=zh`
             }
         };
-
         const REFRESH_INTERVAL = 15000;
         const STORAGE_KEY = 'busEtaStops_v2';
+        const LWB_PREFIXES = ['A', 'B', 'E', 'R', 'S'];
 
-        /* ═══════════════════════════════════════════════════════════
+        /* ═══════════════════════════════════════════
            STATE
-           ═══════════════════════════════════════════════════════════ */
+        ═══════════════════════════════════════════ */
         let refreshTimer = null;
         let isFetching = false;
         let stopNameCache = {};
         let routeListCache = {};
-        let currentStops = [];
+        let currentStops = [];       // saved stop configs
         let explicitTheme = null;
         let selectedDirection = null;
         let selectedCompany = 'CTB';
         let isFullscreenMode = false;
 
-        // Map<rowKey, { element, rawEtas }>
-        // rawEtas stores the raw ETA timestamps so we know when API data actually changed
+        /*
+         * renderedRows:  Map<stopKey, { element: HTMLElement }>
+         *
+         * ONE entry per stop in currentStops.
+         * The element is the single .bus-row for that stop.
+         * ETA content inside is ALWAYS fully overwritten on every refresh.
+         *
+         * We do NOT try to do sub-grouping or smart diffing on ETA entries —
+         * that was the source of the "missing bus" bugs.
+         */
         const renderedRows = new Map();
 
-        /* ═══════════════════════════════════════════════════════════
-           KEY GENERATION
-           Each stop in currentStops gets one unique key.
-           groupEta can produce sub-entries (multiple route/dir combos)
-           so we make a composite key: stopKey + route + dir
-           ═══════════════════════════════════════════════════════════ */
+        /* ═══════════════════════════════════════════
+           UTILITIES
+        ═══════════════════════════════════════════ */
+        function isLwbRoute(r) {
+            r = r.toUpperCase();
+            return LWB_PREFIXES.some(p => r.startsWith(p) && /^[A-Z]\d/.test(r));
+        }
+
         function makeStopKey(sd) {
             const dir = sd.company === 'NLB' ? 'nlb' : (sd.direction || 'none');
             const rid = sd.company === 'NLB' ? (sd.nlbRouteId || sd.routeId) : sd.routeId;
             return `${sd.company}||${rid}||${sd.stopId}||${dir}`;
         }
 
-        // Row key includes the route+dir from grouped entry to handle
-        // joint routes that produce multiple rows per stop
-        function makeRowKey(stopKey, route, dir) {
-            return `${stopKey}||${route}||${dir || 'X'}`;
+        /* ═══════════════════════════════════════════
+           LOGO CACHE
+        ═══════════════════════════════════════════ */
+        const logoLoadCache = {};
+        function testLogoUrl(url) {
+            if (url in logoLoadCache) return Promise.resolve(logoLoadCache[url]);
+            return new Promise(r => {
+                const i = new Image();
+                i.onload = () => { logoLoadCache[url] = true; r(true) };
+                i.onerror = () => { logoLoadCache[url] = false; r(false) };
+                i.src = url;
+            });
         }
+        Object.values(COMPANY_LOGOS).forEach(u => testLogoUrl(u));
 
-        /* ═══════════════════════════════════════════════════════════
+        /* ═══════════════════════════════════════════
            STORAGE
-           ═══════════════════════════════════════════════════════════ */
+        ═══════════════════════════════════════════ */
         function saveStopsToStorage() {
             try {
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(currentStops.map(s => ({
-                    stopId: s.stopId,
-                    routeId: s.routeId,
-                    nlbRouteId: s.nlbRouteId,
-                    direction: s.direction,
-                    company: s.company,
-                    serviceType: s.serviceType,
-                    nlbDest: s.nlbDest || '',
-                    stopInfoCache: s.stopInfo,
-                    altStopName: s.altStopName || null
+                    stopId: s.stopId, routeId: s.routeId, nlbRouteId: s.nlbRouteId,
+                    direction: s.direction, company: s.company, serviceType: s.serviceType,
+                    nlbDest: s.nlbDest || '', stopInfoCache: s.stopInfo, altStopName: s.altStopName || null
                 }))));
             } catch (e) { }
         }
-
         function loadStopsFromStorage() {
             try {
                 const stored = localStorage.getItem(STORAGE_KEY);
@@ -1732,44 +1713,35 @@
                 const data = JSON.parse(stored);
                 if (!Array.isArray(data) || !data.length) return false;
                 currentStops = data.map(s => ({
-                    stopId: s.stopId,
-                    routeId: s.routeId,
-                    nlbRouteId: s.nlbRouteId || null,
-                    direction: s.direction || null,
-                    company: s.company,
-                    serviceType: s.serviceType || 1,
-                    nlbDest: s.nlbDest || '',
-                    stopInfo: s.stopInfoCache || null,
-                    altStopName: s.altStopName || null
+                    stopId: s.stopId, routeId: s.routeId, nlbRouteId: s.nlbRouteId || null,
+                    direction: s.direction || null, company: s.company, serviceType: s.serviceType || 1,
+                    nlbDest: s.nlbDest || '', stopInfo: s.stopInfoCache || null, altStopName: s.altStopName || null
                 }));
                 updateClearButton();
                 return true;
             } catch (e) { return false; }
         }
 
-        /* ═══════════════════════════════════════════════════════════
+        /* ═══════════════════════════════════════════
            CLOCK
-           ═══════════════════════════════════════════════════════════ */
+        ═══════════════════════════════════════════ */
         function updateClock() {
             const now = new Date();
-            document.getElementById('currentTime').textContent =
-                now.toLocaleTimeString('zh-HK', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+            document.getElementById('currentTime').textContent = now.toLocaleTimeString('zh-HK', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
             const d = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
-            document.getElementById('currentDate').textContent =
-                `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日 ${d[now.getDay()]}`;
+            document.getElementById('currentDate').textContent = `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日 ${d[now.getDay()]}`;
         }
         setInterval(updateClock, 1000);
         updateClock();
 
-        /* ═══════════════════════════════════════════════════════════
+        /* ═══════════════════════════════════════════
            THEME
-           ═══════════════════════════════════════════════════════════ */
+        ═══════════════════════════════════════════ */
         function applyTheme(t) {
             document.body.classList.toggle('dark-mode', t === 'dark');
             const b = document.getElementById('themeToggleBtn');
             if (b) b.textContent = t === 'dark' ? '淺色模式' : '深色模式';
         }
-
         function loadThemePreference() {
             const s = localStorage.getItem('busEtaTheme');
             if (s === 'light' || s === 'dark') { explicitTheme = s; applyTheme(s); }
@@ -1778,7 +1750,6 @@
                 if (!explicitTheme) applyTheme(e.matches ? 'dark' : 'light');
             });
         }
-
         function toggleThemeMode() {
             const next = document.body.classList.contains('dark-mode') ? 'light' : 'dark';
             explicitTheme = next;
@@ -1786,9 +1757,9 @@
             applyTheme(next);
         }
 
-        /* ═══════════════════════════════════════════════════════════
+        /* ═══════════════════════════════════════════
            STATUS
-           ═══════════════════════════════════════════════════════════ */
+        ═══════════════════════════════════════════ */
         function setStatus(state, text) {
             const d = document.getElementById('statusDot');
             d.className = 'status-dot';
@@ -1797,9 +1768,9 @@
             document.getElementById('statusText').textContent = text;
         }
 
-        /* ═══════════════════════════════════════════════════════════
+        /* ═══════════════════════════════════════════
            STOP NAME HELPERS
-           ═══════════════════════════════════════════════════════════ */
+        ═══════════════════════════════════════════ */
         async function fetchStopNameFromCo(id, co) {
             const key = `${co}_${id}`;
             if (stopNameCache[key]) return stopNameCache[key];
@@ -1815,39 +1786,30 @@
             } catch (e) { }
             return null;
         }
-
         async function fetchStopNames(id, primaryCo, isJoint) {
             if (primaryCo === 'NLB') return { primary: { name_tc: id, name_en: '' }, alt: null };
             const primary = await fetchStopNameFromCo(id, primaryCo) || { name_tc: id, name_en: '' };
             if (!isJoint) return { primary, alt: null };
             const otherCo = (primaryCo === 'CTB' || primaryCo === 'NWFB') ? 'KMB' : 'CTB';
             const other = await fetchStopNameFromCo(id, otherCo);
-            if (other?.name_tc && other.name_tc !== primary.name_tc)
-                return { primary, alt: { ...other, co: otherCo } };
+            if (other?.name_tc && other.name_tc !== primary.name_tc) return { primary, alt: { ...other, co: otherCo } };
             return { primary, alt: null };
         }
-
         async function fetchStopName(id, company) {
             const co = (company || 'CTB').toUpperCase();
             if (co === 'NLB') return { name_tc: id, name_en: '' };
             return await fetchStopNameFromCo(id, co) || { name_tc: id, name_en: '' };
         }
 
-        /* ═══════════════════════════════════════════════════════════
+        /* ═══════════════════════════════════════════
            DISPLAY HELPERS
-           ═══════════════════════════════════════════════════════════ */
-        function getCompanyName(c) {
-            return { CTB: '城巴', NWFB: '城巴', KMB: '九巴', LWB: '龍運', NLB: '嶼巴', MTR: '港鐵巴士' }[c] || c;
-        }
-
-        function getCompanyClass(c) {
-            return { CTB: 'ctb', NWFB: 'ctb', KMB: 'kmb', LWB: 'lwb', NLB: 'nlb', MTR: 'mtr' }[c] || 'ctb';
-        }
+        ═══════════════════════════════════════════ */
+        function getCompanyName(c) { return { CTB: '城巴', NWFB: '城巴', KMB: '九巴', LWB: '龍運', NLB: '嶼巴', MTR: '港鐵巴士' }[c] || c; }
+        function getCompanyClass(c) { return { CTB: 'ctb', NWFB: 'ctb', KMB: 'kmb', LWB: 'lwb', NLB: 'nlb', MTR: 'mtr' }[c] || 'ctb'; }
 
         function showMessage(icon, text, sub) {
             renderedRows.clear();
-            document.getElementById('busRowsContainer').innerHTML =
-                `<div class="message-container"><div class="icon">${icon}</div><div class="text">${text}</div>${sub ? `<div class="subtext">${sub}</div>` : ''}</div>`;
+            document.getElementById('busRowsContainer').innerHTML = `<div class="message-container"><div class="icon">${icon}</div><div class="text">${text}</div>${sub ? `<div class="subtext">${sub}</div>` : ''}</div>`;
             document.getElementById('recordCount').textContent = '顯示 0 條記錄';
         }
 
@@ -1857,15 +1819,8 @@
             if (r.startsWith('N')) return 'route-type-night';
             if (r.endsWith('X') && !isLwbRoute(r)) return 'route-type-express';
             if (r.startsWith('R') && !isLwbRoute(r)) return 'route-type-special';
-            switch (c) {
-                case 'CTB': case 'NWFB': return 'route-co-ctb';
-                case 'KMB': return 'route-co-kmb';
-                case 'NLB': return 'route-co-nlb';
-                case 'MTR': return 'route-co-mtr';
-                default: return 'route-co-ctb';
-            }
+            switch (c) { case 'CTB': case 'NWFB': return 'route-co-ctb'; case 'KMB': return 'route-co-kmb'; case 'NLB': return 'route-co-nlb'; case 'MTR': return 'route-co-mtr'; default: return 'route-co-ctb'; }
         }
-
         function getAccentClass(rn, co, isJoint) {
             if (isJoint) return 'accent-joint';
             const r = rn.toUpperCase(), c = (co || '').toUpperCase();
@@ -1873,19 +1828,70 @@
             if (r.startsWith('N')) return 'accent-night';
             if (r.endsWith('X') && !isLwbRoute(r)) return 'accent-express';
             if (r.startsWith('R') && !isLwbRoute(r)) return 'accent-special';
-            switch (c) {
-                case 'CTB': case 'NWFB': return 'accent-ctb';
-                case 'KMB': return 'accent-kmb';
-                case 'NLB': return 'accent-nlb';
-                case 'MTR': return 'accent-mtr';
-                default: return 'accent-ctb';
+            switch (c) { case 'CTB': case 'NWFB': return 'accent-ctb'; case 'KMB': return 'accent-kmb'; case 'NLB': return 'accent-nlb'; case 'MTR': return 'accent-mtr'; default: return 'accent-ctb'; }
+        }
+
+        /* ═══════════════════════════════════════════
+           ETA RENDERING
+           
+           buildEtaHtml — takes ALL raw ETA items for a stop,
+           sorts by arrival time, and renders up to 4.
+           This is called on EVERY refresh for EVERY row.
+           No caching, no diffing — always fresh.
+        ═══════════════════════════════════════════ */
+        function buildEtaHtml(etaItems) {
+            // Filter out items without a valid eta timestamp
+            const valid = etaItems
+                .filter(e => e.eta)
+                .map(e => ({ ...e, _ms: new Date(e.eta).getTime() }))
+                .filter(e => !isNaN(e._ms))
+                .sort((a, b) => a._ms - b._ms);   // sort by arrival time ASC
+
+            if (!valid.length) return '<span class="eta-na">暫無班次</span>';
+
+            const now = Date.now();
+
+            // Take up to 4 soonest
+            const items = valid.slice(0, 4);
+
+            function etaInfo(item) {
+                const diff = Math.floor((item._ms - now) / 60000);
+                if (diff <= 0) return { cls: 'eta-arriving', txt: '到站', isArriving: true };
+                if (diff <= 3) return { cls: 'eta-arriving', txt: String(diff), isArriving: false };
+                if (diff <= 10) return { cls: 'eta-soon', txt: String(diff), isArriving: false };
+                return { cls: 'eta-normal', txt: String(diff), isArriving: false };
             }
+
+            const first = items[0];
+            const rest = items.slice(1);
+            const fi = etaInfo(first);
+
+            let h = `<div class="eta-primary ${fi.cls}">`;
+            h += fi.isArriving || fi.txt === '到站'
+                ? `<span class="eta-min">${fi.txt}</span>`
+                : `<span class="eta-min">${fi.txt}</span><span class="eta-unit">分鐘</span>`;
+            if (first.rmk_tc) h += `<span class="eta-rmk">${first.rmk_tc}</span>`;
+            h += '</div>';
+
+            if (rest.length) {
+                h += '<div class="eta-secondary">';
+                rest.forEach(item => {
+                    const info = etaInfo(item);
+                    h += `<div class="eta-row ${info.cls}">`;
+                    h += info.isArriving || info.txt === '到站'
+                        ? `<span class="eta-min">${info.txt}</span>`
+                        : `<span class="eta-min">${info.txt}</span><span class="eta-unit">分</span>`;
+                    if (item.rmk_tc) h += `<span class="eta-rmk">${item.rmk_tc}</span>`;
+                    h += '</div>';
+                });
+                h += '</div>';
+            }
+            return h;
         }
 
-        function buildRouteCell(rn, co) {
-            return `<div class="route-cell ${getRouteColorClass(rn, co)}"><span class="route-number">${rn}</span></div>`;
-        }
-
+        /* ═══════════════════════════════════════════
+           LOGO / COMPANY CELL BUILDERS
+        ═══════════════════════════════════════════ */
         async function buildSingleLogoEl(co) {
             const url = COMPANY_LOGOS[co];
             if (url) {
@@ -1893,8 +1899,7 @@
                 if (ok) {
                     const dk = document.body.classList.contains('dark-mode');
                     const img = document.createElement('img');
-                    img.src = url;
-                    img.alt = getCompanyName(co);
+                    img.src = url; img.alt = getCompanyName(co);
                     let cls = 'company-logo';
                     if (co === 'CTB' || co === 'NWFB') cls += ' logo-ctb';
                     else if (co === 'NLB') cls += ' logo-nlb';
@@ -1908,7 +1913,6 @@
             span.textContent = getCompanyName(co);
             return span;
         }
-
         async function buildCompanyCell(co, isJoint) {
             const div = document.createElement('div');
             div.className = 'company-cell';
@@ -1923,155 +1927,79 @@
             return div;
         }
 
-        /* ═══════════════════════════════════════════════════════════
-           ETA RENDERING
-           
-           KEY FIX: The displayed minutes are relative to Date.now().
-           On every refresh cycle we MUST rebuild the ETA HTML even if
-           the raw API timestamps haven't changed, because the diff
-           in minutes changes as time passes.
-           
-           We use rawEtaSignature only to decide whether to play
-           the pulse animation (= API returned genuinely new data).
-           ═══════════════════════════════════════════════════════════ */
-        function getEtaInfo(item) {
-            if (!item.eta) return { cls: 'eta-na', txt: '--', diff: null, rmk: '' };
-            const diff = Math.floor((new Date(item.eta) - Date.now()) / 60000);
-            let cls, txt;
-            if (diff <= 0) { cls = 'eta-arriving'; txt = '到站'; }
-            else if (diff <= 3) { cls = 'eta-arriving'; txt = diff; }
-            else if (diff <= 10) { cls = 'eta-soon'; txt = diff; }
-            else { cls = 'eta-normal'; txt = diff; }
-            return { cls, txt, diff, rmk: item.rmk_tc || '' };
-        }
+        /* ═══════════════════════════════════════════
+           ROW BUILDER
+           Builds a complete .bus-row DOM element.
+           The eta-cell is populated immediately but
+           will be overwritten on every subsequent refresh.
+        ═══════════════════════════════════════════ */
+        async function buildBusRow(sd, etaItems, stopNames, animateIn) {
+            const stopKey = makeStopKey(sd);
+            const isNlb = sd.company === 'NLB';
+            const isJoint = !isNlb && JOINT_ROUTES.has(sd.routeId.toUpperCase());
 
-        // Signature of the raw API data (timestamps + remarks).
-        // Used ONLY to detect whether the API returned new/different ETAs.
-        function getRawEtaSignature(etas) {
-            if (!etas || !etas.length) return 'NONE';
-            return etas
-                .filter(e => e.eta)
-                .sort((a, b) => new Date(a.eta) - new Date(b.eta))
-                .map(e => `${e.eta}|${e.rmk_tc || ''}`)
-                .join(';;');
-        }
+            let dCo = sd.company;
+            if (dCo === 'KMB' && isLwbRoute(sd.routeId)) dCo = 'LWB';
 
-        function buildEtaCellContent(etas) {
-            if (!etas || !etas.length) return '<span class="eta-na">暫無班次</span>';
-            const sorted = etas
-                .filter(e => e.eta)
-                .sort((a, b) => (a.eta_seq || 0) - (b.eta_seq || 0))
-                .slice(0, 4);
-            if (!sorted.length) return '<span class="eta-na">暫無班次</span>';
-
-            const p = sorted[0], sec = sorted.slice(1);
-            const pi = getEtaInfo(p);
-            let h = `<div class="eta-primary ${pi.cls}">`;
-            h += (pi.diff !== null && pi.diff <= 0)
-                ? `<span class="eta-min">${pi.txt}</span>`
-                : `<span class="eta-min">${pi.txt}</span><span class="eta-unit">分鐘</span>`;
-            if (pi.rmk) h += `<span class="eta-rmk">${pi.rmk}</span>`;
-            h += '</div>';
-
-            if (sec.length) {
-                h += '<div class="eta-secondary">';
-                sec.forEach(item => {
-                    const info = getEtaInfo(item);
-                    h += `<div class="eta-row ${info.cls}">`;
-                    h += (info.diff !== null && info.diff <= 0)
-                        ? `<span class="eta-min">${info.txt}</span>`
-                        : `<span class="eta-min">${info.txt}</span><span class="eta-unit">分</span>`;
-                    if (info.rmk) h += `<span class="eta-rmk">${info.rmk}</span>`;
-                    h += '</div>';
-                });
-                h += '</div>';
-            }
-            return h;
-        }
-
-        // Always rewrite ETA content. Optionally pulse if data changed.
-        function refreshEtaInRow(rowEl, etas, dataChanged) {
-            const cell = rowEl.querySelector('.eta-cell');
-            if (!cell) return;
-            cell.innerHTML = buildEtaCellContent(etas);
-            if (dataChanged) {
-                cell.classList.remove('eta-updated');
-                void cell.offsetWidth;
-                cell.classList.add('eta-updated');
-                setTimeout(() => cell.classList.remove('eta-updated'), 600);
-            }
-        }
-
-        /* ═══════════════════════════════════════════════════════════
-           ROW BUILDING
-           ═══════════════════════════════════════════════════════════ */
-        async function buildBusRow(entry, stopNames, animateIn, rowKey, isJoint) {
             const row = document.createElement('div');
             row.className = 'bus-row' + (animateIn ? ' row-enter' : '');
-            row.dataset.rowKey = rowKey;
-            // Also store stopKey for drag reorder
-            row.dataset.stopKey = rowKey.split('||').slice(0, 4).join('||');
+            row.dataset.stopKey = stopKey;
 
+            // drag handle
             const dh = document.createElement('div');
-            dh.className = 'drag-handle';
-            dh.innerHTML = '⠿';
-            dh.title = '拖動以重新排序';
+            dh.className = 'drag-handle'; dh.innerHTML = '⠿'; dh.title = '拖動以重新排序';
 
-            let dCo = entry.co || 'CTB';
-            if (dCo === 'KMB' && isLwbRoute(entry.route)) dCo = 'LWB';
-
+            // accent
             const acc = document.createElement('div');
-            acc.className = 'row-accent ' + getAccentClass(entry.route, dCo, isJoint);
+            acc.className = 'row-accent ' + getAccentClass(sd.routeId, dCo, isJoint);
 
+            // route number
             const rd = document.createElement('div');
-            rd.innerHTML = buildRouteCell(entry.route, isJoint ? 'CTB' : dCo);
+            rd.innerHTML = `<div class="route-cell ${getRouteColorClass(sd.routeId, dCo)}"><span class="route-number">${sd.routeId}</span></div>`;
 
+            // stop / dest cell
+            // dest_tc: take from first valid ETA item, fallback to nlbDest
+            const destTc = etaItems.find(e => e.dest_tc)?.dest_tc || sd.nlbDest || '--';
             const pri = stopNames.primary || { name_tc: '--', name_en: '' };
             const alt = stopNames.alt;
-            const sd = document.createElement('div');
-            sd.className = 'stop-cell';
-            let sh = `<div class="dest-direction">${entry.dest_tc || '--'}</div>` +
-                `<div class="stop-name">${pri.name_tc}<div class="stop-name-en">${pri.name_en || ''}</div></div>`;
+            const sd2 = document.createElement('div');
+            sd2.className = 'stop-cell';
+            let sh = `<div class="dest-direction">${destTc}</div>`
+                + `<div class="stop-name">${pri.name_tc}<div class="stop-name-en">${pri.name_en || ''}</div></div>`;
             if (alt?.name_tc) sh += `<div class="stop-name-alt"><span class="alt-badge">${getCompanyName(alt.co)}</span>${alt.name_tc}</div>`;
-            sd.innerHTML = sh;
+            sd2.innerHTML = sh;
 
+            // company
             const cd = await buildCompanyCell(dCo, isJoint);
 
+            // ETA cell — will be overwritten every refresh
             const ed = document.createElement('div');
             ed.className = 'eta-cell';
-            ed.innerHTML = buildEtaCellContent(entry.etas);
+            ed.innerHTML = buildEtaHtml(etaItems);
 
+            // remove button
             const rm = document.createElement('div');
             rm.className = 'remove-cell';
             rm.innerHTML = `<button class="row-remove-btn" title="移除此站點">✕</button>`;
-            const stopKey = row.dataset.stopKey;
-            rm.querySelector('button').onclick = e => {
-                e.stopPropagation();
-                removeStopByKey(stopKey);
-            };
+            rm.querySelector('button').onclick = e => { e.stopPropagation(); removeStopByKey(stopKey); };
 
-            row.append(dh, acc, rd, sd, cd, ed, rm);
+            row.append(dh, acc, rd, sd2, cd, ed, rm);
             return row;
         }
 
-        /* ═══════════════════════════════════════════════════════════
+        /* ═══════════════════════════════════════════
            REMOVE STOP
-           ═══════════════════════════════════════════════════════════ */
+        ═══════════════════════════════════════════ */
         function removeStopByKey(key) {
             const idx = currentStops.findIndex(s => makeStopKey(s) === key);
             if (idx < 0) return;
             currentStops.splice(idx, 1);
             saveStopsToStorage();
             updateClearButton();
-
-            // Remove all rendered rows belonging to this stop
-            for (const [rk, data] of renderedRows) {
-                if (rk.startsWith(key + '||')) {
-                    data.element.remove();
-                    renderedRows.delete(rk);
-                }
+            if (renderedRows.has(key)) {
+                renderedRows.get(key).element.remove();
+                renderedRows.delete(key);
             }
-
             if (!currentStops.length) {
                 showMessage('🔍', '請選擇路線及巴士站以查詢到站時間', '按上方按鈕開始');
                 stopAutoRefresh();
@@ -2080,53 +2008,9 @@
             }
         }
 
-        /* ═══════════════════════════════════════════════════════════
-           ETA GROUPING
-           ═══════════════════════════════════════════════════════════ */
-        function groupEta(etaData, dirFilter, isNlb, nlbDest) {
-            const g = {};
-            etaData.forEach(item => {
-                const n = isNlb || (item.co || '').toUpperCase() === 'NLB';
-                if (!n && dirFilter) {
-                    if (dirFilter === 'inbound' && item.dir !== 'I') return;
-                    if (dirFilter === 'outbound' && item.dir !== 'O') return;
-                }
-                const k = `${item.route}:${item.dir || 'O'}`;
-                if (!g[k]) {
-                    g[k] = {
-                        route: item.route,
-                        dir: item.dir || 'O',
-                        co: item.co || 'CTB',
-                        dest_tc: item.dest_tc || (n ? (nlbDest || '') : ''),
-                        stop: item.stop,
-                        etas: []
-                    };
-                }
-                if (item.dest_tc && !g[k].dest_tc) g[k].dest_tc = item.dest_tc;
-                if (item.eta) {
-                    g[k].etas.push({
-                        eta: item.eta,
-                        rmk_tc: item.rmk_tc || '',
-                        eta_seq: item.eta_seq || 0
-                    });
-                }
-            });
-            Object.values(g).forEach(e => {
-                e.etas.sort((a, b) => new Date(a.eta) - new Date(b.eta));
-                e.etas.forEach((x, i) => x.eta_seq = i + 1);
-                e.etas = e.etas.filter((x, i, a) =>
-                    i === 0 || Math.abs(new Date(x.eta) - new Date(a[i - 1].eta)) > 30000
-                );
-            });
-            return Object.values(g).sort((a, b) => {
-                const an = parseInt(a.route) || 0, bn = parseInt(b.route) || 0;
-                return an !== bn ? an - bn : a.route.localeCompare(b.route);
-            });
-        }
-
-        /* ═══════════════════════════════════════════════════════════
+        /* ═══════════════════════════════════════════
            API FETCHERS
-           ═══════════════════════════════════════════════════════════ */
+        ═══════════════════════════════════════════ */
         async function fetchCtbEta(s, r) {
             try {
                 const res = await fetch(API.CTB.eta(s, r));
@@ -2135,7 +2019,6 @@
                 return (d.data || []).map(x => ({ ...x, co: x.co || 'CTB' }));
             } catch { return []; }
         }
-
         async function fetchKmbEta(s, r, st) {
             try {
                 const res = await fetch(API.KMB.eta(s, r, st || 1));
@@ -2144,206 +2027,179 @@
                 return (d.data || []).map(x => ({ ...x, co: x.co || 'KMB' }));
             } catch { return []; }
         }
-
         async function fetchNlbEta(s, rid, rno, nd) {
             try {
                 const res = await fetch(API.NLB.eta(s, rid));
                 if (!res.ok) return [];
                 const d = await res.json();
                 return (d.estimatedArrivals || []).map((x, i) => ({
-                    route: rno,
-                    dir: 'O',
-                    co: 'NLB',
+                    route: rno, dir: 'O', co: 'NLB',
                     dest_tc: x.destination_zh || x.destination_tc || x.destination || nd || '',
-                    stop: s,
-                    eta: x.estimatedArrivalTime,
+                    stop: s, eta: x.estimatedArrivalTime,
                     rmk_tc: x.remarks_zh || x.remarks_tc || x.remarks || '',
                     eta_seq: i + 1
                 }));
             } catch { return []; }
         }
 
-        async function fetchJointEta(sd) {
-            const co = sd.company, route = sd.routeId.toUpperCase(), stopId = sd.stopId;
-            if (co === 'NLB') return fetchNlbEta(stopId, sd.nlbRouteId || route, sd.routeId, sd.nlbDest || '');
-            if (co === 'LWB') return fetchKmbEta(stopId, route, sd.serviceType);
-            if (JOINT_ROUTES.has(route)) {
-                const [c, k] = await Promise.all([
-                    fetchCtbEta(stopId, route),
-                    fetchKmbEta(stopId, route, sd.serviceType)
-                ]);
-                return [...c, ...k];
+        /*
+         * fetchAllEtaForStop
+         * Returns a flat array of ALL raw ETA objects for the stop.
+         * For joint routes we merge CTB + KMB results.
+         * Direction filtering is applied here so only relevant arrivals remain.
+         */
+        async function fetchAllEtaForStop(sd) {
+            const co = sd.company;
+            const route = sd.routeId.toUpperCase();
+            const stopId = sd.stopId;
+            const dir = sd.direction; // 'inbound'|'outbound'|null
+
+            let raw = [];
+            if (co === 'NLB') {
+                raw = await fetchNlbEta(stopId, sd.nlbRouteId || route, sd.routeId, sd.nlbDest || '');
+            } else if (co === 'LWB') {
+                raw = await fetchKmbEta(stopId, route, sd.serviceType);
+            } else if (JOINT_ROUTES.has(route)) {
+                const [c, k] = await Promise.all([fetchCtbEta(stopId, route), fetchKmbEta(stopId, route, sd.serviceType)]);
+                raw = [...c, ...k];
+            } else if (co === 'CTB') {
+                raw = await fetchCtbEta(stopId, route);
+            } else if (co === 'KMB') {
+                raw = await fetchKmbEta(stopId, route, sd.serviceType);
             }
-            if (co === 'CTB') return fetchCtbEta(stopId, route);
-            if (co === 'KMB') return fetchKmbEta(stopId, route, sd.serviceType);
-            return [];
+
+            // Apply direction filter for non-NLB
+            if (dir && co !== 'NLB') {
+                const want = dir === 'inbound' ? 'I' : 'O';
+                raw = raw.filter(e => !e.dir || e.dir === want);
+            }
+
+            return raw;
         }
 
-        /* ═══════════════════════════════════════════════════════════
-           TIMER MANAGEMENT
-           ═══════════════════════════════════════════════════════════ */
+        /* ═══════════════════════════════════════════
+           TIMER
+        ═══════════════════════════════════════════ */
         function stopAutoRefresh() {
             if (refreshTimer) { clearInterval(refreshTimer); refreshTimer = null; }
         }
-
         function startAutoRefresh() {
             stopAutoRefresh();
             refreshTimer = setInterval(() => fetchMultiETA(), REFRESH_INTERVAL);
         }
-
         function manualRefresh() {
             if (!currentStops.length) return;
             stopAutoRefresh();
             fetchMultiETA();
         }
 
-        /* ═══════════════════════════════════════════════════════════
+        /* ═══════════════════════════════════════════
            CORE FETCH & RENDER
            
-           On every cycle (auto or manual):
-           1. Fetch fresh ETA from APIs for all saved stops
-           2. For each existing row: ALWAYS rewrite ETA HTML
-              (because displayed minutes change with time)
-           3. Only play pulse animation when raw API data changed
-           4. Add new rows / remove stale rows
-           ═══════════════════════════════════════════════════════════ */
+           Strategy (simple & reliable):
+           
+           1. Fetch fresh ETA data from API for every saved stop.
+           2. If a row already exists for that stop → just overwrite
+              its .eta-cell innerHTML with fresh data. Done.
+           3. If no row yet → build the full row and append it.
+           4. Remove any rows whose stop was deleted.
+           
+           No grouping by route/direction sub-keys.
+           No signature comparison.
+           No reordering via appendChild.
+           Every ETA cell is always 100% rewritten.
+        ═══════════════════════════════════════════ */
         async function fetchMultiETA() {
             if (!currentStops.length) {
                 showMessage('⚠️', '請先選擇路線及巴士站', '按「選擇路線 / 巴士站」按鈕開始。');
                 setStatus('error', '尚未選擇');
                 return;
             }
-
             if (isFetching) return;
             isFetching = true;
             stopAutoRefresh();
-
             setStatus('loading', `正在查詢 ${currentStops.length} 個站點...`);
 
             try {
-                // 1. Fetch all stop data in parallel
-                const rawResults = await Promise.all(currentStops.map(async sd => {
+                // 1. Fetch all stops in parallel
+                const results = await Promise.all(currentStops.map(async sd => {
                     try {
                         const isNlb = sd.company === 'NLB';
                         const isJoint = !isNlb && JOINT_ROUTES.has(sd.routeId.toUpperCase());
 
-                        // Resolve stop names (cached)
-                        let stopNames;
-                        if (sd.stopInfo) {
-                            let alt = sd.altStopName || null;
-                            if (isJoint && !alt) {
-                                const oCo = (sd.company === 'CTB' || sd.company === 'NWFB') ? 'KMB' : 'CTB';
-                                const o = await fetchStopNameFromCo(sd.stopId, oCo);
-                                if (o?.name_tc && o.name_tc !== sd.stopInfo.name_tc) alt = { ...o, co: oCo };
-                                sd.altStopName = alt;
-                            }
-                            stopNames = { primary: sd.stopInfo, alt };
-                        } else {
+                        // Resolve stop names (cached after first fetch)
+                        if (!sd.stopInfo) {
                             const names = await fetchStopNames(sd.stopId, sd.company, isJoint);
                             sd.stopInfo = names.primary;
                             sd.altStopName = names.alt;
-                            stopNames = names;
+                        } else if (isJoint && !sd.altStopName) {
+                            const oCo = (sd.company === 'CTB' || sd.company === 'NWFB') ? 'KMB' : 'CTB';
+                            const o = await fetchStopNameFromCo(sd.stopId, oCo);
+                            if (o?.name_tc && o.name_tc !== sd.stopInfo.name_tc)
+                                sd.altStopName = { ...o, co: oCo };
                         }
 
-                        const etaData = await fetchJointEta(sd);
+                        const stopNames = { primary: sd.stopInfo, alt: sd.altStopName || null };
+                        const etaItems = await fetchAllEtaForStop(sd);
 
-                        return {
-                            stopKey: makeStopKey(sd),
-                            routeId: sd.routeId,
-                            direction: sd.direction,
-                            company: sd.company,
-                            stopNames,
-                            nlbDest: sd.nlbDest || '',
-                            etaData,
-                            isNlb,
-                            isJoint
-                        };
-                    } catch { return null; }
+                        return { sd, stopNames, etaItems };
+                    } catch (e) {
+                        return { sd, stopNames: { primary: { name_tc: sd.stopId, name_en: '' }, alt: null }, etaItems: [] };
+                    }
                 }));
 
-                const results = rawResults.filter(r => r !== null);
-
-                if (!results.length) {
-                    showMessage('🚏', '所有站點均無資料', '請檢查路線及站點');
-                    setStatus('error', '無資料');
-                    return;
-                }
-
+                // 2. Update DOM
                 const container = document.getElementById('busRowsContainer');
 
-                // Clear placeholder message if present
+                // Remove placeholder if present
                 if (container.querySelector('.message-container')) {
                     container.innerHTML = '';
                     renderedRows.clear();
                 }
 
-                // 2. Build desired row list
-                const desiredRows = []; // { rowKey, entry, stopNames, isJoint }
-                for (const result of results) {
-                    const entries = groupEta(
-                        result.etaData, result.direction,
-                        result.isNlb, result.nlbDest
-                    );
-                    for (const entry of entries) {
-                        const rowKey = makeRowKey(result.stopKey, entry.route, entry.dir);
-                        desiredRows.push({
-                            rowKey,
-                            stopKey: result.stopKey,
-                            entry,
-                            stopNames: result.stopNames,
-                            isJoint: result.isJoint
-                        });
-                    }
-                }
+                // Track which keys we've seen this cycle
+                const seenKeys = new Set();
 
-                const desiredKeySet = new Set(desiredRows.map(r => r.rowKey));
+                for (const { sd, stopNames, etaItems } of results) {
+                    const key = makeStopKey(sd);
+                    seenKeys.add(key);
 
-                // 3. Remove stale rows
-                for (const [rk, data] of renderedRows) {
-                    if (!desiredKeySet.has(rk)) {
-                        data.element.remove();
-                        renderedRows.delete(rk);
-                    }
-                }
-
-                // 4. Update existing rows / add new rows
-                for (const { rowKey, entry, stopNames, isJoint } of desiredRows) {
-                    const newRawSig = getRawEtaSignature(entry.etas);
-
-                    if (renderedRows.has(rowKey)) {
-                        // Row exists — ALWAYS rewrite ETA (minutes change with time)
-                        const cached = renderedRows.get(rowKey);
-                        const dataChanged = (cached.rawEtaSig !== newRawSig);
-
-                        // Always refresh the displayed time
-                        refreshEtaInRow(cached.element, entry.etas, dataChanged);
-
-                        // Update stored raw signature
-                        cached.rawEtaSig = newRawSig;
-
-                        // Ensure correct DOM order
-                        container.appendChild(cached.element);
+                    if (renderedRows.has(key)) {
+                        // Row exists — overwrite ETA cell completely
+                        const rowEl = renderedRows.get(key).element;
+                        const etaCell = rowEl.querySelector('.eta-cell');
+                        if (etaCell) {
+                            etaCell.innerHTML = buildEtaHtml(etaItems);
+                            // Pulse animation on every update
+                            etaCell.classList.remove('eta-updated');
+                            void etaCell.offsetWidth;
+                            etaCell.classList.add('eta-updated');
+                            setTimeout(() => etaCell.classList.remove('eta-updated'), 600);
+                        }
                     } else {
-                        // New row
-                        const rowEl = await buildBusRow(entry, stopNames, true, rowKey, isJoint);
+                        // New row — build and append
+                        const rowEl = await buildBusRow(sd, etaItems, stopNames, true);
                         container.appendChild(rowEl);
-                        renderedRows.set(rowKey, {
-                            element: rowEl,
-                            rawEtaSig: newRawSig
-                        });
+                        renderedRows.set(key, { element: rowEl });
                     }
                 }
 
-                // 5. Fallback
+                // 3. Remove any rows for stops that are no longer in currentStops
+                for (const [key, data] of renderedRows) {
+                    if (!seenKeys.has(key)) {
+                        data.element.remove();
+                        renderedRows.delete(key);
+                    }
+                }
+
+                // 4. Fallback message
                 if (!container.children.length) {
                     showMessage('🚏', '暫無到站資料', '所選站點目前沒有巴士到站資訊');
                 }
 
-                // 6. Update status
-                document.getElementById('lastUpdate').textContent =
-                    `最後更新：${new Date().toLocaleTimeString('zh-HK', { hour12: false })}`;
-                document.getElementById('recordCount').textContent =
-                    `顯示 ${currentStops.length} 個站點`;
+                // 5. Status bar
+                document.getElementById('lastUpdate').textContent = `最後更新：${new Date().toLocaleTimeString('zh-HK', { hour12: false })}`;
+                document.getElementById('recordCount').textContent = `顯示 ${currentStops.length} 個站點`;
                 setStatus('ok', `已更新 ${results.length}/${currentStops.length} 個站點`);
 
             } catch (err) {
@@ -2355,16 +2211,15 @@
             }
         }
 
-        /* ═══════════════════════════════════════════════════════════
-           FULLSCREEN / CLEAR
-           ═══════════════════════════════════════════════════════════ */
+        /* ═══════════════════════════════════════════
+           UI ACTIONS
+        ═══════════════════════════════════════════ */
         function toggleFullscreenMode() {
             isFullscreenMode = !isFullscreenMode;
             document.body.classList.toggle('fullscreen-mode', isFullscreenMode);
             const b = document.getElementById('fullscreenToggleBtn');
             if (b) b.textContent = isFullscreenMode ? '退出全螢幕' : '全螢幕模式';
         }
-
         function clearAllStops() {
             currentStops = [];
             saveStopsToStorage();
@@ -2374,19 +2229,17 @@
             document.getElementById('clearBtn').style.display = 'none';
             stopAutoRefresh();
         }
-
         function updateClearButton() {
             const b = document.getElementById('clearBtn');
             if (b) b.style.display = currentStops.length > 0 ? 'inline-block' : 'none';
         }
 
-        /* ═══════════════════════════════════════════════════════════
+        /* ═══════════════════════════════════════════
            MODAL / STOP SELECTOR
-           ═══════════════════════════════════════════════════════════ */
+        ═══════════════════════════════════════════ */
         function selectCompany(co) {
             selectedCompany = co;
-            document.querySelectorAll('.company-btn').forEach(b =>
-                b.classList.toggle('active', b.dataset.co === co));
+            document.querySelectorAll('.company-btn').forEach(b => b.classList.toggle('active', b.dataset.co === co));
             document.getElementById('routeFilterInput').value = '';
             document.getElementById('selectedRouteTitle').textContent = '請先選擇路線及方向';
             document.getElementById('stopList').innerHTML = '<div class="stop-list-empty">尚未載入巴士站。</div>';
@@ -2396,21 +2249,16 @@
             document.getElementById('directionButtons').style.display = n ? 'none' : '';
             loadRouteList(co);
         }
-
         async function loadRouteList(co) {
             const apiCo = co === 'LWB' ? 'KMB' : co;
             if (routeListCache[co]) { populateRouteSelect(routeListCache[co], co); return; }
-
             const sel = document.getElementById('routeSelect');
             sel.innerHTML = '<option disabled>載入中...</option>';
-
             try {
                 if (apiCo === 'CTB') {
                     const r = await fetch(API.CTB.routeList);
                     const d = await r.json();
-                    const list = (d.data || []).map(x => ({
-                        route: x.route, orig_tc: x.orig_tc, dest_tc: x.dest_tc, co: 'CTB'
-                    }));
+                    const list = (d.data || []).map(x => ({ route: x.route, orig_tc: x.orig_tc, dest_tc: x.dest_tc, co: 'CTB' }));
                     routeListCache.CTB = list;
                     populateRouteSelect(list, 'CTB');
                 } else if (apiCo === 'KMB') {
@@ -2423,21 +2271,9 @@
                     const kR = [], lR = [], sK = {}, sL = {};
                     raw.forEach(x => {
                         if (isLwbRoute(x.route)) {
-                            if (!sL[x.route]) {
-                                sL[x.route] = true;
-                                lR.push({
-                                    route: x.route, orig_tc: x.orig_tc, dest_tc: x.dest_tc,
-                                    co: 'LWB', service_type: x.service_type, bound: x.bound
-                                });
-                            }
+                            if (!sL[x.route]) { sL[x.route] = true; lR.push({ route: x.route, orig_tc: x.orig_tc, dest_tc: x.dest_tc, co: 'LWB', service_type: x.service_type, bound: x.bound }); }
                         } else {
-                            if (!sK[x.route]) {
-                                sK[x.route] = true;
-                                kR.push({
-                                    route: x.route, orig_tc: x.orig_tc, dest_tc: x.dest_tc,
-                                    co: 'KMB', service_type: x.service_type, bound: x.bound
-                                });
-                            }
+                            if (!sK[x.route]) { sK[x.route] = true; kR.push({ route: x.route, orig_tc: x.orig_tc, dest_tc: x.dest_tc, co: 'KMB', service_type: x.service_type, bound: x.bound }); }
                         }
                     });
                     routeListCache._KMB_FULL = raw;
@@ -2448,30 +2284,19 @@
                 } else if (apiCo === 'NLB') {
                     const r = await fetch(API.NLB.routeList);
                     const d = await r.json();
-                    const list = (d.routes || []).map(x => ({
-                        route: x.routeNo, orig_tc: x.routeName_c || x.routeNo,
-                        dest_tc: x.routeName_c || '', co: 'NLB', nlbRouteId: x.routeId
-                    }));
+                    const list = (d.routes || []).map(x => ({ route: x.routeNo, orig_tc: x.routeName_c || x.routeNo, dest_tc: x.routeName_c || '', co: 'NLB', nlbRouteId: x.routeId }));
                     routeListCache.NLB = list;
                     populateRouteSelect(list, 'NLB');
                 }
-            } catch {
-                sel.innerHTML = '<option disabled>載入失敗</option>';
-            }
+            } catch { sel.innerHTML = '<option disabled>載入失敗</option>'; }
         }
-
         function populateRouteSelect(list, co) {
             const s = document.getElementById('routeSelect');
             s.innerHTML = '';
-            [...list].sort((a, b) => {
-                const an = parseInt(a.route) || 0, bn = parseInt(b.route) || 0;
-                return an !== bn ? an - bn : a.route.localeCompare(b.route);
-            }).forEach(r => {
+            [...list].sort((a, b) => { const an = parseInt(a.route) || 0, bn = parseInt(b.route) || 0; return an !== bn ? an - bn : a.route.localeCompare(b.route); }).forEach(r => {
                 const o = document.createElement('option');
                 o.value = r.route;
-                o.textContent = co === 'NLB'
-                    ? `${r.route} — ${r.orig_tc}`
-                    : `${r.route} — ${r.orig_tc || ''} ↔ ${r.dest_tc || ''}`;
+                o.textContent = co === 'NLB' ? `${r.route} — ${r.orig_tc}` : `${r.route} — ${r.orig_tc || ''} ↔ ${r.dest_tc || ''}`;
                 o.dataset.origTc = r.orig_tc || '';
                 o.dataset.destTc = r.dest_tc || '';
                 o.dataset.co = co;
@@ -2479,7 +2304,6 @@
                 s.appendChild(o);
             });
         }
-
         function openStopSelector() {
             document.getElementById('stopSelectorModal').classList.add('active');
             document.getElementById('routeFilterInput').value = '';
@@ -2491,51 +2315,30 @@
             document.getElementById('directionButtons').style.display = n ? 'none' : '';
             loadRouteList(selectedCompany);
         }
-
-        function closeStopSelector() {
-            document.getElementById('stopSelectorModal').classList.remove('active');
-        }
-
+        function closeStopSelector() { document.getElementById('stopSelectorModal').classList.remove('active'); }
         function filterRouteOptions() {
             const v = document.getElementById('routeFilterInput').value.trim().toLowerCase();
-            Array.from(document.getElementById('routeSelect').options).forEach(o => {
-                o.style.display = o.textContent.toLowerCase().includes(v) ? '' : 'none';
-            });
+            Array.from(document.getElementById('routeSelect').options).forEach(o => { o.style.display = o.textContent.toLowerCase().includes(v) ? '' : 'none'; });
         }
-
         function onRouteSelectChange() {
-            const s = document.getElementById('routeSelect');
-            const o = s.options[s.selectedIndex];
-            const t = document.getElementById('selectedRouteTitle');
+            const s = document.getElementById('routeSelect'), o = s.options[s.selectedIndex], t = document.getElementById('selectedRouteTitle');
             if (!o) { t.textContent = '請先選擇路線及方向'; return; }
-            t.textContent = selectedCompany === 'NLB'
-                ? `已選路線：${o.value}（${o.dataset.origTc || ''}）`
-                : `已選路線：${o.value}（${o.dataset.origTc || ''} ↔ ${o.dataset.destTc || ''}）`;
+            t.textContent = selectedCompany === 'NLB' ? `已選路線：${o.value}（${o.dataset.origTc || ''}）` : `已選路線：${o.value}（${o.dataset.origTc || ''} ↔ ${o.dataset.destTc || ''}）`;
         }
-
         function setSelectedDirection(dir) {
             selectedDirection = dir;
             document.getElementById('dirInboundBtn').classList.toggle('active', dir === 'inbound');
             document.getElementById('dirOutboundBtn').classList.toggle('active', dir === 'outbound');
         }
-
         async function loadStopsForSelection() {
-            const sel = document.getElementById('routeSelect');
-            const btn = document.getElementById('loadStopsBtn');
-            const list = document.getElementById('stopList');
-            const title = document.getElementById('selectedRouteTitle');
-            const opt = sel.options[sel.selectedIndex];
-            const co = selectedCompany;
-
+            const sel = document.getElementById('routeSelect'), btn = document.getElementById('loadStopsBtn');
+            const list = document.getElementById('stopList'), title = document.getElementById('selectedRouteTitle');
+            const opt = sel.options[sel.selectedIndex], co = selectedCompany;
             if (!opt) { list.innerHTML = '<div class="stop-list-empty">請先選擇路線。</div>'; return; }
             const route = opt.value;
-            if (co !== 'NLB' && !selectedDirection) {
-                list.innerHTML = '<div class="stop-list-empty">請先選擇方向。</div>'; return;
-            }
-
+            if (co !== 'NLB' && !selectedDirection) { list.innerHTML = '<div class="stop-list-empty">請先選擇方向。</div>'; return; }
             if (btn) btn.disabled = true;
             list.innerHTML = '<div class="stop-list-empty">正在載入...</div>';
-
             try {
                 if (co === 'CTB') {
                     const r = await fetch(API.CTB.routeStop(route, selectedDirection));
@@ -2544,27 +2347,17 @@
                     const stops = d.data || [];
                     if (!stops.length) { list.innerHTML = '<div class="stop-list-empty">此方向沒有巴士站資料。</div>'; return; }
                     list.innerHTML = '';
-                    for (const s of stops) {
-                        const info = await fetchStopName(s.stop, 'CTB');
-                        appendStopItem(list, s.stop, route, info, 'CTB', null, null, null);
-                    }
+                    for (const s of stops) { const info = await fetchStopName(s.stop, 'CTB'); appendStopItem(list, s.stop, route, info, 'CTB', null, null, null); }
                 } else if (co === 'KMB' || co === 'LWB') {
                     let st = 1;
-                    if (routeListCache._KMB_FULL) {
-                        const bound = selectedDirection === 'inbound' ? 'I' : 'O';
-                        const m = routeListCache._KMB_FULL.find(x => x.route === route && x.bound === bound);
-                        if (m) st = m.service_type || 1;
-                    }
+                    if (routeListCache._KMB_FULL) { const bound = selectedDirection === 'inbound' ? 'I' : 'O'; const m = routeListCache._KMB_FULL.find(x => x.route === route && x.bound === bound); if (m) st = m.service_type || 1; }
                     const r = await fetch(API.KMB.routeStop(route, selectedDirection, st));
                     if (!r.ok) { list.innerHTML = '<div class="stop-list-empty">載入失敗</div>'; return; }
                     const d = await r.json();
                     const stops = d.data || [];
                     if (!stops.length) { list.innerHTML = '<div class="stop-list-empty">此方向沒有巴士站資料。</div>'; return; }
                     list.innerHTML = '';
-                    for (const s of stops) {
-                        const info = await fetchStopName(s.stop, 'KMB');
-                        appendStopItem(list, s.stop, route, info, co, st, null, null);
-                    }
+                    for (const s of stops) { const info = await fetchStopName(s.stop, 'KMB'); appendStopItem(list, s.stop, route, info, co, st, null, null); }
                 } else if (co === 'NLB') {
                     const nid = opt.dataset.nlbRouteId || '';
                     const nd = opt.dataset.destTc || opt.dataset.origTc || route;
@@ -2584,73 +2377,43 @@
                         appendStopItem(list, sid, route, info, 'NLB', null, nid, nd);
                     }
                 }
-
-                if (title) title.textContent = selectedCompany === 'NLB'
-                    ? `已選路線：${route}（${opt.dataset.origTc || ''}）`
-                    : `已選路線：${route}（${opt.dataset.origTc || ''} ↔ ${opt.dataset.destTc || ''}）`;
-            } catch {
-                list.innerHTML = '<div class="stop-list-empty">載入錯誤。</div>';
-            } finally {
-                if (btn) btn.disabled = false;
-            }
+                if (title) title.textContent = selectedCompany === 'NLB' ? `已選路線：${route}（${opt.dataset.origTc || ''}）` : `已選路線：${route}（${opt.dataset.origTc || ''} ↔ ${opt.dataset.destTc || ''}）`;
+            } catch { list.innerHTML = '<div class="stop-list-empty">載入錯誤。</div>'; }
+            finally { if (btn) btn.disabled = false; }
         }
-
         function appendStopItem(c, sid, route, info, company, st, nrid, nd) {
             const item = document.createElement('div');
             item.className = 'stop-list-item';
             item.onclick = () => selectStopFromModal(sid, route, info, company, st, nrid, nd);
-            item.innerHTML = `<div class="stop-list-item-main">${info.name_tc || sid}</div>` +
-                `<div class="stop-list-item-sub">${info.name_en || ''} （站號：${sid}）</div>`;
+            item.innerHTML = `<div class="stop-list-item-main">${info.name_tc || sid}</div><div class="stop-list-item-sub">${info.name_en || ''} （站號：${sid}）</div>`;
             c.appendChild(item);
         }
-
         async function selectStopFromModal(sid, rno, si, co, st, nrid, nd) {
             const dir = co === 'NLB' ? null : selectedDirection;
             const sd = {
-                stopId: sid, routeId: rno,
-                nlbRouteId: nrid || null,
-                direction: dir,
-                company: co || selectedCompany,
-                serviceType: st || 1,
-                nlbDest: nd || '',
-                stopInfo: si || await fetchStopName(sid, co),
-                altStopName: null
+                stopId: sid, routeId: rno, nlbRouteId: nrid || null, direction: dir,
+                company: co || selectedCompany, serviceType: st || 1, nlbDest: nd || '',
+                stopInfo: si || await fetchStopName(sid, co), altStopName: null
             };
-
             const key = makeStopKey(sd);
             const idx = currentStops.findIndex(s => makeStopKey(s) === key);
-
             if (idx >= 0) {
                 currentStops.splice(idx, 1);
-                // Remove rendered rows for this stop
-                for (const [rk, data] of renderedRows) {
-                    if (rk.startsWith(key + '||')) {
-                        data.element.remove();
-                        renderedRows.delete(rk);
-                    }
-                }
+                if (renderedRows.has(key)) { renderedRows.get(key).element.remove(); renderedRows.delete(key); }
             } else {
                 currentStops.push(sd);
             }
-
             saveStopsToStorage();
             closeStopSelector();
             updateClearButton();
-
-            if (currentStops.length > 0) {
-                stopAutoRefresh();
-                fetchMultiETA();
-            } else {
-                showMessage('🔍', '請選擇路線及巴士站以查詢到站時間', '按上方按鈕開始');
-                stopAutoRefresh();
-            }
+            if (currentStops.length > 0) { stopAutoRefresh(); fetchMultiETA(); }
+            else { showMessage('🔍', '請選擇路線及巴士站以查詢到站時間', '按上方按鈕開始'); stopAutoRefresh(); }
         }
 
-        /* ═══════════════════════════════════════════════════════════
+        /* ═══════════════════════════════════════════
            DRAG & DROP
-           ═══════════════════════════════════════════════════════════ */
+        ═══════════════════════════════════════════ */
         let isDragging = false, dragState = null;
-
         function initDragDrop() {
             const container = document.getElementById('busRowsContainer');
             container.addEventListener('mousedown', onDragStart);
@@ -2661,11 +2424,7 @@
             document.addEventListener('touchend', onDragEnd);
             document.addEventListener('touchcancel', onDragEnd);
         }
-
-        function getPointerY(e) {
-            return e.touches?.length ? e.touches[0].clientY : e.clientY;
-        }
-
+        function getPointerY(e) { return e.touches?.length ? e.touches[0].clientY : e.clientY; }
         function onDragStart(e) {
             if (isFullscreenMode) return;
             const handle = e.target.closest('.drag-handle');
@@ -2673,42 +2432,29 @@
             const row = handle.closest('.bus-row');
             if (!row) return;
             e.preventDefault();
-
             const rect = row.getBoundingClientRect();
             const placeholder = document.createElement('div');
             placeholder.className = 'drag-placeholder';
             placeholder.style.height = rect.height + 'px';
-
-            dragState = {
-                row, placeholder,
-                offsetY: getPointerY(e) - rect.top,
-                rowWidth: rect.width,
-                rowHeight: rect.height
-            };
-
+            dragState = { row, placeholder, offsetY: getPointerY(e) - rect.top, rowWidth: rect.width, rowHeight: rect.height };
             row.classList.add('dragging');
             row.style.width = rect.width + 'px';
             row.style.height = rect.height + 'px';
             row.style.left = rect.left + 'px';
             row.style.top = (getPointerY(e) - dragState.offsetY) + 'px';
-
             row.parentNode.insertBefore(placeholder, row);
             document.body.appendChild(row);
             document.body.classList.add('is-dragging');
             isDragging = true;
         }
-
         function onDragMove(e) {
             if (!isDragging || !dragState) return;
             e.preventDefault();
             const y = getPointerY(e);
             const { row, placeholder } = dragState;
-
             row.style.top = (y - dragState.offsetY) + 'px';
-
             const container = document.getElementById('busRowsContainer');
             const siblings = [...container.querySelectorAll('.bus-row,.drag-placeholder')];
-
             let targetIndex = siblings.length;
             for (let i = 0; i < siblings.length; i++) {
                 const sib = siblings[i];
@@ -2716,7 +2462,6 @@
                 const box = sib.getBoundingClientRect();
                 if (y < box.top + box.height / 2) { targetIndex = i; break; }
             }
-
             const curIdx = siblings.indexOf(placeholder);
             if (targetIndex !== curIdx) {
                 placeholder.remove();
@@ -2725,80 +2470,55 @@
                 else container.insertBefore(placeholder, updated[targetIndex]);
             }
         }
-
         function onDragEnd() {
             if (!isDragging || !dragState) return;
             const { row, placeholder } = dragState;
             const container = document.getElementById('busRowsContainer');
-
             row.classList.remove('dragging');
             row.style.position = ''; row.style.width = ''; row.style.height = '';
             row.style.left = ''; row.style.top = ''; row.style.zIndex = '';
-
             container.insertBefore(row, placeholder);
             placeholder.remove();
-
             document.body.classList.remove('is-dragging');
-            isDragging = false;
-            dragState = null;
-
+            isDragging = false; dragState = null;
             reorderStopsFromDOM();
         }
-
         function reorderStopsFromDOM() {
             const rows = document.querySelectorAll('#busRowsContainer .bus-row');
             const keyToStop = new Map();
             currentStops.forEach(s => keyToStop.set(makeStopKey(s), s));
-
-            // Collect unique stop keys in DOM order
             const seen = new Set();
             const newOrder = [];
             rows.forEach(row => {
                 const k = row.dataset.stopKey;
-                if (k && keyToStop.has(k) && !seen.has(k)) {
-                    seen.add(k);
-                    newOrder.push(keyToStop.get(k));
-                }
+                if (k && keyToStop.has(k) && !seen.has(k)) { seen.add(k); newOrder.push(keyToStop.get(k)); }
             });
-
             if (newOrder.length === currentStops.length) {
                 currentStops = newOrder;
                 saveStopsToStorage();
-
-                // Rebuild renderedRows map
+                // Rebuild renderedRows in new order
                 renderedRows.clear();
                 rows.forEach(row => {
-                    const rk = row.dataset.rowKey;
-                    if (rk) {
-                        renderedRows.set(rk, {
-                            element: row,
-                            rawEtaSig: '' // will be refreshed on next cycle
-                        });
-                    }
+                    const k = row.dataset.stopKey;
+                    if (k) renderedRows.set(k, { element: row });
                 });
             }
         }
 
-        /* ═══════════════════════════════════════════════════════════
+        /* ═══════════════════════════════════════════
            KEYBOARD
-           ═══════════════════════════════════════════════════════════ */
+        ═══════════════════════════════════════════ */
         document.addEventListener('keydown', e => {
-            if (e.key === 'Escape') {
-                closeStopSelector();
-                if (isFullscreenMode) toggleFullscreenMode();
-            }
+            if (e.key === 'Escape') { closeStopSelector(); if (isFullscreenMode) toggleFullscreenMode(); }
         });
 
-        /* ═══════════════════════════════════════════════════════════
+        /* ═══════════════════════════════════════════
            BOOT
-           ═══════════════════════════════════════════════════════════ */
+        ═══════════════════════════════════════════ */
         loadThemePreference();
         initDragDrop();
-
         const hadSaved = loadStopsFromStorage();
-        if (hadSaved && currentStops.length > 0) {
-            setTimeout(() => fetchMultiETA(), 400);
-        }
+        if (hadSaved && currentStops.length > 0) setTimeout(() => fetchMultiETA(), 400);
     </script>
 </body>
 
