@@ -85,3 +85,6 @@ cd hk-bus-eta
 open index.html
 # or on Windows:
 start index.html
+
+### Option 2 — 🌐 Use Github HTML Viewer
+https://htmlpreview.github.io/?https://github.com/benny-135/hk_bus_eta/blob/main/index.html
