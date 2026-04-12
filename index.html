@@ -603,6 +603,15 @@
             padding: 12px 8px
         }
 
+        .modal-footer {
+            padding: 8px 20px 10px;
+            border-top: 1px solid #eee;
+            font-size: 12px;
+            color: #9e9e9e;
+            background: #fafafa;
+            flex-shrink: 0
+        }
+
         .company-selector {
             display: flex;
             gap: 6px;
@@ -1501,8 +1510,7 @@
 
 <body>
     <div class="header">
-        <div class="header-title">
-            <span class="icon">🚌</span>
+        <div class="header-title"><span class="icon">🚌</span>
             <div>
                 <h1>巴士到站時間預報</h1>
                 <div class="subtitle">Bus Estimated Time of Arrival</div>
@@ -1526,13 +1534,12 @@
         <button class="btn-secondary" type="button" onclick="openStopSelector()">選擇路線 / 巴士站</button>
         <button class="btn-secondary" type="button" onclick="clearAllStops()" id="clearBtn"
             style="display:none;">清除所有站點</button>
-        <button class="btn-search" onclick="currentStops.length > 0 ? manualRefresh() : null">查詢 / 重新整理</button>
+        <button class="btn-search" onclick="manualRefresh()">查詢 / 重新整理</button>
     </div>
 
     <div class="status-bar">
         <div class="status-indicator">
-            <div class="status-dot" id="statusDot"></div>
-            <span id="statusText">等待查詢...</span>
+            <div class="status-dot" id="statusDot"></div><span id="statusText">等待查詢...</span>
         </div>
         <div>
             <span id="lastUpdate">最後更新：--</span>&nbsp;|&nbsp;
@@ -1605,7 +1612,9 @@
     </div>
 
     <script>
-        // ─── Constants ───────────────────────────────────────────────────────────────
+        /* ═══════════════════════════════════════════════════════════
+           CONSTANTS
+           ═══════════════════════════════════════════════════════════ */
         const JOINT_ROUTES = new Set([
             '101', '102', '104', '105', '106', '107', '108', '109', '110', '111', '112',
             '113', '115', '116', '118', 'N121', '170', '171', '182', '182P', 'N182',
@@ -1620,6 +1629,24 @@
             MTR: 'https://upload.wikimedia.org/wikipedia/en/thumb/b/b9/HK_MTR_logo.svg/960px-HK_MTR_logo.svg.png',
             NWFB: 'https://www.citybus.com.hk/_common/images/logo.png'
         };
+
+        const logoLoadCache = {};
+        function testLogoUrl(url) {
+            if (url in logoLoadCache) return Promise.resolve(logoLoadCache[url]);
+            return new Promise(r => {
+                const i = new Image();
+                i.onload = () => { logoLoadCache[url] = true; r(true); };
+                i.onerror = () => { logoLoadCache[url] = false; r(false); };
+                i.src = url;
+            });
+        }
+        Object.values(COMPANY_LOGOS).forEach(u => testLogoUrl(u));
+
+        const LWB_ROUTE_PREFIXES = ['A', 'B', 'E', 'R', 'S'];
+        function isLwbRoute(r) {
+            r = r.toUpperCase();
+            return LWB_ROUTE_PREFIXES.some(p => r.startsWith(p) && /^[A-Z]\d/.test(r));
+        }
 
         const API = {
             CTB: {
@@ -1643,11 +1670,12 @@
 
         const REFRESH_INTERVAL = 15000;
         const STORAGE_KEY = 'busEtaStops_v2';
-        const LWB_ROUTE_PREFIXES = ['A', 'B', 'E', 'R', 'S'];
 
-        // ─── State ───────────────────────────────────────────────────────────────────
+        /* ═══════════════════════════════════════════════════════════
+           STATE
+           ═══════════════════════════════════════════════════════════ */
         let refreshTimer = null;
-        let isFetching = false;          // guard against overlapping fetches
+        let isFetching = false;
         let stopNameCache = {};
         let routeListCache = {};
         let currentStops = [];
@@ -1656,35 +1684,31 @@
         let selectedCompany = 'CTB';
         let isFullscreenMode = false;
 
-        // renderedRows: Map<stopKey, { element: HTMLElement, etaSignature: string }>
+        // Map<rowKey, { element, rawEtas }>
+        // rawEtas stores the raw ETA timestamps so we know when API data actually changed
         const renderedRows = new Map();
 
-        // ─── Helpers ─────────────────────────────────────────────────────────────────
-        function isLwbRoute(r) {
-            r = r.toUpperCase();
-            return LWB_ROUTE_PREFIXES.some(p => r.startsWith(p) && /^[A-Z]\d/.test(r));
-        }
-
+        /* ═══════════════════════════════════════════════════════════
+           KEY GENERATION
+           Each stop in currentStops gets one unique key.
+           groupEta can produce sub-entries (multiple route/dir combos)
+           so we make a composite key: stopKey + route + dir
+           ═══════════════════════════════════════════════════════════ */
         function makeStopKey(sd) {
             const dir = sd.company === 'NLB' ? 'nlb' : (sd.direction || 'none');
             const rid = sd.company === 'NLB' ? (sd.nlbRouteId || sd.routeId) : sd.routeId;
             return `${sd.company}||${rid}||${sd.stopId}||${dir}`;
         }
 
-        // ─── Logo cache ──────────────────────────────────────────────────────────────
-        const logoLoadCache = {};
-        function testLogoUrl(url) {
-            if (url in logoLoadCache) return Promise.resolve(logoLoadCache[url]);
-            return new Promise(r => {
-                const i = new Image();
-                i.onload = () => { logoLoadCache[url] = true; r(true); };
-                i.onerror = () => { logoLoadCache[url] = false; r(false); };
-                i.src = url;
-            });
+        // Row key includes the route+dir from grouped entry to handle
+        // joint routes that produce multiple rows per stop
+        function makeRowKey(stopKey, route, dir) {
+            return `${stopKey}||${route}||${dir || 'X'}`;
         }
-        Object.values(COMPANY_LOGOS).forEach(u => testLogoUrl(u));
 
-        // ─── Storage ─────────────────────────────────────────────────────────────────
+        /* ═══════════════════════════════════════════════════════════
+           STORAGE
+           ═══════════════════════════════════════════════════════════ */
         function saveStopsToStorage() {
             try {
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(currentStops.map(s => ({
@@ -1723,19 +1747,23 @@
             } catch (e) { return false; }
         }
 
-        // ─── Clock ───────────────────────────────────────────────────────────────────
+        /* ═══════════════════════════════════════════════════════════
+           CLOCK
+           ═══════════════════════════════════════════════════════════ */
         function updateClock() {
             const now = new Date();
             document.getElementById('currentTime').textContent =
                 now.toLocaleTimeString('zh-HK', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
-            const days = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+            const d = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
             document.getElementById('currentDate').textContent =
-                `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日 ${days[now.getDay()]}`;
+                `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日 ${d[now.getDay()]}`;
         }
         setInterval(updateClock, 1000);
         updateClock();
 
-        // ─── Theme ───────────────────────────────────────────────────────────────────
+        /* ═══════════════════════════════════════════════════════════
+           THEME
+           ═══════════════════════════════════════════════════════════ */
         function applyTheme(t) {
             document.body.classList.toggle('dark-mode', t === 'dark');
             const b = document.getElementById('themeToggleBtn');
@@ -1745,11 +1773,10 @@
         function loadThemePreference() {
             const s = localStorage.getItem('busEtaTheme');
             if (s === 'light' || s === 'dark') { explicitTheme = s; applyTheme(s); }
-            else applyTheme(window.matchMedia && window.matchMedia('(prefers-color-scheme:dark)').matches ? 'dark' : 'light');
-            if (window.matchMedia)
-                window.matchMedia('(prefers-color-scheme:dark)').addEventListener('change', e => {
-                    if (!explicitTheme) applyTheme(e.matches ? 'dark' : 'light');
-                });
+            else applyTheme(window.matchMedia?.('(prefers-color-scheme:dark)').matches ? 'dark' : 'light');
+            window.matchMedia?.('(prefers-color-scheme:dark)').addEventListener('change', e => {
+                if (!explicitTheme) applyTheme(e.matches ? 'dark' : 'light');
+            });
         }
 
         function toggleThemeMode() {
@@ -1759,7 +1786,9 @@
             applyTheme(next);
         }
 
-        // ─── Status bar ──────────────────────────────────────────────────────────────
+        /* ═══════════════════════════════════════════════════════════
+           STATUS
+           ═══════════════════════════════════════════════════════════ */
         function setStatus(state, text) {
             const d = document.getElementById('statusDot');
             d.className = 'status-dot';
@@ -1768,7 +1797,9 @@
             document.getElementById('statusText').textContent = text;
         }
 
-        // ─── Stop-name helpers ───────────────────────────────────────────────────────
+        /* ═══════════════════════════════════════════════════════════
+           STOP NAME HELPERS
+           ═══════════════════════════════════════════════════════════ */
         async function fetchStopNameFromCo(id, co) {
             const key = `${co}_${id}`;
             if (stopNameCache[key]) return stopNameCache[key];
@@ -1776,7 +1807,7 @@
                 const url = (co === 'KMB' || co === 'LWB') ? API.KMB.stop(id) : API.CTB.stop(id);
                 const r = await fetch(url);
                 const d = await r.json();
-                if (d.data && d.data.name_tc) {
+                if (d.data?.name_tc) {
                     const info = { name_tc: d.data.name_tc, name_en: d.data.name_en || '' };
                     stopNameCache[key] = info;
                     return info;
@@ -1791,7 +1822,7 @@
             if (!isJoint) return { primary, alt: null };
             const otherCo = (primaryCo === 'CTB' || primaryCo === 'NWFB') ? 'KMB' : 'CTB';
             const other = await fetchStopNameFromCo(id, otherCo);
-            if (other && other.name_tc && other.name_tc !== primary.name_tc)
+            if (other?.name_tc && other.name_tc !== primary.name_tc)
                 return { primary, alt: { ...other, co: otherCo } };
             return { primary, alt: null };
         }
@@ -1802,23 +1833,21 @@
             return await fetchStopNameFromCo(id, co) || { name_tc: id, name_en: '' };
         }
 
-        // ─── Utility ─────────────────────────────────────────────────────────────────
+        /* ═══════════════════════════════════════════════════════════
+           DISPLAY HELPERS
+           ═══════════════════════════════════════════════════════════ */
         function getCompanyName(c) {
             return { CTB: '城巴', NWFB: '城巴', KMB: '九巴', LWB: '龍運', NLB: '嶼巴', MTR: '港鐵巴士' }[c] || c;
         }
+
         function getCompanyClass(c) {
             return { CTB: 'ctb', NWFB: 'ctb', KMB: 'kmb', LWB: 'lwb', NLB: 'nlb', MTR: 'mtr' }[c] || 'ctb';
         }
 
         function showMessage(icon, text, sub) {
-            const container = document.getElementById('busRowsContainer');
-            // Clear rendered rows map since we're wiping the DOM
             renderedRows.clear();
-            container.innerHTML = `<div class="message-container">
-            <div class="icon">${icon}</div>
-            <div class="text">${text}</div>
-            ${sub ? `<div class="subtext">${sub}</div>` : ''}
-        </div>`;
+            document.getElementById('busRowsContainer').innerHTML =
+                `<div class="message-container"><div class="icon">${icon}</div><div class="text">${text}</div>${sub ? `<div class="subtext">${sub}</div>` : ''}</div>`;
             document.getElementById('recordCount').textContent = '顯示 0 條記錄';
         }
 
@@ -1853,92 +1882,8 @@
             }
         }
 
-        // ─── ETA logic ───────────────────────────────────────────────────────────────
-        /**
-         * Returns a stable string signature for an array of ETA items.
-         * We floor each ETA to the nearest minute so minor sub-second drift
-         * does NOT trigger a spurious "changed" signal every cycle.
-         */
-        function getEtaSignature(etas) {
-            if (!etas || !etas.length) return 'NONE';
-            return etas
-                .slice()
-                .sort((a, b) => (a.eta_seq || 0) - (b.eta_seq || 0))
-                .map(e => {
-                    if (!e.eta) return 'NA';
-                    // floor to nearest 30 s to avoid jitter
-                    const floored = Math.floor(new Date(e.eta).getTime() / 30000) * 30000;
-                    return `${floored}|${e.rmk_tc || ''}`;
-                })
-                .join(';;');
-        }
-
-        function getEtaInfo(item) {
-            if (!item.eta) return { cls: 'eta-na', txt: '--', diff: null, rmk: '' };
-            const diff = Math.floor((new Date(item.eta) - Date.now()) / 60000);
-            let cls, txt;
-            if (diff <= 0) { cls = 'eta-arriving'; txt = '到站'; }
-            else if (diff <= 3) { cls = 'eta-arriving'; txt = diff; }
-            else if (diff <= 10) { cls = 'eta-soon'; txt = diff; }
-            else { cls = 'eta-normal'; txt = diff; }
-            return { cls, txt, diff, rmk: item.rmk_tc || '' };
-        }
-
-        function buildEtaCellContent(etas) {
-            if (!etas || !etas.length) return '<span class="eta-na">暫無班次</span>';
-            const sorted = etas
-                .filter(e => e.eta)
-                .sort((a, b) => (a.eta_seq || 0) - (b.eta_seq || 0))
-                .slice(0, 4);
-            if (!sorted.length) return '<span class="eta-na">暫無班次</span>';
-
-            const p = sorted[0], sec = sorted.slice(1);
-            const pi = getEtaInfo(p);
-
-            let h = `<div class="eta-primary ${pi.cls}">`;
-            if (pi.diff !== null && pi.diff <= 0) {
-                h += `<span class="eta-min">${pi.txt}</span>`;
-            } else {
-                h += `<span class="eta-min">${pi.txt}</span><span class="eta-unit">分鐘</span>`;
-            }
-            if (pi.rmk) h += `<span class="eta-rmk">${pi.rmk}</span>`;
-            h += '</div>';
-
-            if (sec.length) {
-                h += '<div class="eta-secondary">';
-                sec.forEach(item => {
-                    const info = getEtaInfo(item);
-                    h += `<div class="eta-row ${info.cls}">`;
-                    if (info.diff !== null && info.diff <= 0) {
-                        h += `<span class="eta-min">${info.txt}</span>`;
-                    } else {
-                        h += `<span class="eta-min">${info.txt}</span><span class="eta-unit">分</span>`;
-                    }
-                    if (info.rmk) h += `<span class="eta-rmk">${info.rmk}</span>`;
-                    h += '</div>';
-                });
-                h += '</div>';
-            }
-            return h;
-        }
-
-        // In-place update of just the ETA cell in an existing row
-        function updateEtaCellInRow(rowEl, etas) {
-            const cell = rowEl.querySelector('.eta-cell');
-            if (!cell) return;
-            cell.innerHTML = buildEtaCellContent(etas);
-            // Trigger pulse animation
-            cell.classList.remove('eta-updated');
-            void cell.offsetWidth; // reflow
-            cell.classList.add('eta-updated');
-            setTimeout(() => cell.classList.remove('eta-updated'), 600);
-        }
-
-        // ─── Row building ────────────────────────────────────────────────────────────
         function buildRouteCell(rn, co) {
-            return `<div class="route-cell ${getRouteColorClass(rn, co)}">
-                    <span class="route-number">${rn}</span>
-                </div>`;
+            return `<div class="route-cell ${getRouteColorClass(rn, co)}"><span class="route-number">${rn}</span></div>`;
         }
 
         async function buildSingleLogoEl(co) {
@@ -1978,56 +1923,128 @@
             return div;
         }
 
-        async function buildBusRow(entry, stopNames, animateIn, stopKey, isJoint) {
+        /* ═══════════════════════════════════════════════════════════
+           ETA RENDERING
+           
+           KEY FIX: The displayed minutes are relative to Date.now().
+           On every refresh cycle we MUST rebuild the ETA HTML even if
+           the raw API timestamps haven't changed, because the diff
+           in minutes changes as time passes.
+           
+           We use rawEtaSignature only to decide whether to play
+           the pulse animation (= API returned genuinely new data).
+           ═══════════════════════════════════════════════════════════ */
+        function getEtaInfo(item) {
+            if (!item.eta) return { cls: 'eta-na', txt: '--', diff: null, rmk: '' };
+            const diff = Math.floor((new Date(item.eta) - Date.now()) / 60000);
+            let cls, txt;
+            if (diff <= 0) { cls = 'eta-arriving'; txt = '到站'; }
+            else if (diff <= 3) { cls = 'eta-arriving'; txt = diff; }
+            else if (diff <= 10) { cls = 'eta-soon'; txt = diff; }
+            else { cls = 'eta-normal'; txt = diff; }
+            return { cls, txt, diff, rmk: item.rmk_tc || '' };
+        }
+
+        // Signature of the raw API data (timestamps + remarks).
+        // Used ONLY to detect whether the API returned new/different ETAs.
+        function getRawEtaSignature(etas) {
+            if (!etas || !etas.length) return 'NONE';
+            return etas
+                .filter(e => e.eta)
+                .sort((a, b) => new Date(a.eta) - new Date(b.eta))
+                .map(e => `${e.eta}|${e.rmk_tc || ''}`)
+                .join(';;');
+        }
+
+        function buildEtaCellContent(etas) {
+            if (!etas || !etas.length) return '<span class="eta-na">暫無班次</span>';
+            const sorted = etas
+                .filter(e => e.eta)
+                .sort((a, b) => (a.eta_seq || 0) - (b.eta_seq || 0))
+                .slice(0, 4);
+            if (!sorted.length) return '<span class="eta-na">暫無班次</span>';
+
+            const p = sorted[0], sec = sorted.slice(1);
+            const pi = getEtaInfo(p);
+            let h = `<div class="eta-primary ${pi.cls}">`;
+            h += (pi.diff !== null && pi.diff <= 0)
+                ? `<span class="eta-min">${pi.txt}</span>`
+                : `<span class="eta-min">${pi.txt}</span><span class="eta-unit">分鐘</span>`;
+            if (pi.rmk) h += `<span class="eta-rmk">${pi.rmk}</span>`;
+            h += '</div>';
+
+            if (sec.length) {
+                h += '<div class="eta-secondary">';
+                sec.forEach(item => {
+                    const info = getEtaInfo(item);
+                    h += `<div class="eta-row ${info.cls}">`;
+                    h += (info.diff !== null && info.diff <= 0)
+                        ? `<span class="eta-min">${info.txt}</span>`
+                        : `<span class="eta-min">${info.txt}</span><span class="eta-unit">分</span>`;
+                    if (info.rmk) h += `<span class="eta-rmk">${info.rmk}</span>`;
+                    h += '</div>';
+                });
+                h += '</div>';
+            }
+            return h;
+        }
+
+        // Always rewrite ETA content. Optionally pulse if data changed.
+        function refreshEtaInRow(rowEl, etas, dataChanged) {
+            const cell = rowEl.querySelector('.eta-cell');
+            if (!cell) return;
+            cell.innerHTML = buildEtaCellContent(etas);
+            if (dataChanged) {
+                cell.classList.remove('eta-updated');
+                void cell.offsetWidth;
+                cell.classList.add('eta-updated');
+                setTimeout(() => cell.classList.remove('eta-updated'), 600);
+            }
+        }
+
+        /* ═══════════════════════════════════════════════════════════
+           ROW BUILDING
+           ═══════════════════════════════════════════════════════════ */
+        async function buildBusRow(entry, stopNames, animateIn, rowKey, isJoint) {
             const row = document.createElement('div');
             row.className = 'bus-row' + (animateIn ? ' row-enter' : '');
-            row.dataset.stopKey = stopKey;
+            row.dataset.rowKey = rowKey;
+            // Also store stopKey for drag reorder
+            row.dataset.stopKey = rowKey.split('||').slice(0, 4).join('||');
 
-            // Drag handle
             const dh = document.createElement('div');
             dh.className = 'drag-handle';
             dh.innerHTML = '⠿';
             dh.title = '拖動以重新排序';
 
-            // Company display logic
-            let displayCo = entry.co || 'CTB';
-            if (displayCo === 'KMB' && isLwbRoute(entry.route)) displayCo = 'LWB';
+            let dCo = entry.co || 'CTB';
+            if (dCo === 'KMB' && isLwbRoute(entry.route)) dCo = 'LWB';
 
-            // Accent stripe
             const acc = document.createElement('div');
-            acc.className = 'row-accent ' + getAccentClass(entry.route, displayCo, isJoint);
+            acc.className = 'row-accent ' + getAccentClass(entry.route, dCo, isJoint);
 
-            // Route cell
             const rd = document.createElement('div');
-            rd.innerHTML = buildRouteCell(entry.route, isJoint ? 'CTB' : displayCo);
+            rd.innerHTML = buildRouteCell(entry.route, isJoint ? 'CTB' : dCo);
 
-            // Stop / destination cell
             const pri = stopNames.primary || { name_tc: '--', name_en: '' };
             const alt = stopNames.alt;
             const sd = document.createElement('div');
             sd.className = 'stop-cell';
-            let sh = `<div class="dest-direction">${entry.dest_tc || '--'}</div>
-                  <div class="stop-name">${pri.name_tc}
-                      <div class="stop-name-en">${pri.name_en || ''}</div>
-                  </div>`;
-            if (alt && alt.name_tc)
-                sh += `<div class="stop-name-alt">
-                       <span class="alt-badge">${getCompanyName(alt.co)}</span>${alt.name_tc}
-                   </div>`;
+            let sh = `<div class="dest-direction">${entry.dest_tc || '--'}</div>` +
+                `<div class="stop-name">${pri.name_tc}<div class="stop-name-en">${pri.name_en || ''}</div></div>`;
+            if (alt?.name_tc) sh += `<div class="stop-name-alt"><span class="alt-badge">${getCompanyName(alt.co)}</span>${alt.name_tc}</div>`;
             sd.innerHTML = sh;
 
-            // Company cell (async)
-            const cd = await buildCompanyCell(displayCo, isJoint);
+            const cd = await buildCompanyCell(dCo, isJoint);
 
-            // ETA cell
             const ed = document.createElement('div');
             ed.className = 'eta-cell';
             ed.innerHTML = buildEtaCellContent(entry.etas);
 
-            // Remove button
             const rm = document.createElement('div');
             rm.className = 'remove-cell';
             rm.innerHTML = `<button class="row-remove-btn" title="移除此站點">✕</button>`;
+            const stopKey = row.dataset.stopKey;
             rm.querySelector('button').onclick = e => {
                 e.stopPropagation();
                 removeStopByKey(stopKey);
@@ -2037,7 +2054,9 @@
             return row;
         }
 
-        // ─── Remove stop ─────────────────────────────────────────────────────────────
+        /* ═══════════════════════════════════════════════════════════
+           REMOVE STOP
+           ═══════════════════════════════════════════════════════════ */
         function removeStopByKey(key) {
             const idx = currentStops.findIndex(s => makeStopKey(s) === key);
             if (idx < 0) return;
@@ -2045,9 +2064,12 @@
             saveStopsToStorage();
             updateClearButton();
 
-            if (renderedRows.has(key)) {
-                renderedRows.get(key).element.remove();
-                renderedRows.delete(key);
+            // Remove all rendered rows belonging to this stop
+            for (const [rk, data] of renderedRows) {
+                if (rk.startsWith(key + '||')) {
+                    data.element.remove();
+                    renderedRows.delete(rk);
+                }
             }
 
             if (!currentStops.length) {
@@ -2058,7 +2080,9 @@
             }
         }
 
-        // ─── ETA grouping ────────────────────────────────────────────────────────────
+        /* ═══════════════════════════════════════════════════════════
+           ETA GROUPING
+           ═══════════════════════════════════════════════════════════ */
         function groupEta(etaData, dirFilter, isNlb, nlbDest) {
             const g = {};
             etaData.forEach(item => {
@@ -2087,23 +2111,22 @@
                     });
                 }
             });
-
             Object.values(g).forEach(e => {
                 e.etas.sort((a, b) => new Date(a.eta) - new Date(b.eta));
                 e.etas.forEach((x, i) => x.eta_seq = i + 1);
-                // De-duplicate ETAs within 30 s of each other
                 e.etas = e.etas.filter((x, i, a) =>
                     i === 0 || Math.abs(new Date(x.eta) - new Date(a[i - 1].eta)) > 30000
                 );
             });
-
             return Object.values(g).sort((a, b) => {
                 const an = parseInt(a.route) || 0, bn = parseInt(b.route) || 0;
                 return an !== bn ? an - bn : a.route.localeCompare(b.route);
             });
         }
 
-        // ─── API fetchers ─────────────────────────────────────────────────────────────
+        /* ═══════════════════════════════════════════════════════════
+           API FETCHERS
+           ═══════════════════════════════════════════════════════════ */
         async function fetchCtbEta(s, r) {
             try {
                 const res = await fetch(API.CTB.eta(s, r));
@@ -2141,14 +2164,9 @@
         }
 
         async function fetchJointEta(sd) {
-            const co = sd.company;
-            const route = sd.routeId.toUpperCase();
-            const stopId = sd.stopId;
-
-            if (co === 'NLB')
-                return fetchNlbEta(stopId, sd.nlbRouteId || route, sd.routeId, sd.nlbDest || '');
-            if (co === 'LWB')
-                return fetchKmbEta(stopId, route, sd.serviceType);
+            const co = sd.company, route = sd.routeId.toUpperCase(), stopId = sd.stopId;
+            if (co === 'NLB') return fetchNlbEta(stopId, sd.nlbRouteId || route, sd.routeId, sd.nlbDest || '');
+            if (co === 'LWB') return fetchKmbEta(stopId, route, sd.serviceType);
             if (JOINT_ROUTES.has(route)) {
                 const [c, k] = await Promise.all([
                     fetchCtbEta(stopId, route),
@@ -2161,24 +2179,34 @@
             return [];
         }
 
-        // ─── Timer management ────────────────────────────────────────────────────────
+        /* ═══════════════════════════════════════════════════════════
+           TIMER MANAGEMENT
+           ═══════════════════════════════════════════════════════════ */
         function stopAutoRefresh() {
             if (refreshTimer) { clearInterval(refreshTimer); refreshTimer = null; }
         }
 
         function startAutoRefresh() {
             stopAutoRefresh();
-            refreshTimer = setInterval(fetchMultiETA, REFRESH_INTERVAL);
+            refreshTimer = setInterval(() => fetchMultiETA(), REFRESH_INTERVAL);
         }
 
-        // Manual button press: reset the timer so the next auto-tick is 15 s away
         function manualRefresh() {
             if (!currentStops.length) return;
             stopAutoRefresh();
-            fetchMultiETA();          // fetchMultiETA will call startAutoRefresh() on success
+            fetchMultiETA();
         }
 
-        // ─── Core fetch & render ─────────────────────────────────────────────────────
+        /* ═══════════════════════════════════════════════════════════
+           CORE FETCH & RENDER
+           
+           On every cycle (auto or manual):
+           1. Fetch fresh ETA from APIs for all saved stops
+           2. For each existing row: ALWAYS rewrite ETA HTML
+              (because displayed minutes change with time)
+           3. Only play pulse animation when raw API data changed
+           4. Add new rows / remove stale rows
+           ═══════════════════════════════════════════════════════════ */
         async function fetchMultiETA() {
             if (!currentStops.length) {
                 showMessage('⚠️', '請先選擇路線及巴士站', '按「選擇路線 / 巴士站」按鈕開始。');
@@ -2186,30 +2214,27 @@
                 return;
             }
 
-            // Prevent overlapping fetches
             if (isFetching) return;
             isFetching = true;
-
-            // Pause auto-refresh while fetching to avoid stacking
             stopAutoRefresh();
 
             setStatus('loading', `正在查詢 ${currentStops.length} 個站點...`);
 
             try {
-                // ── 1. Fetch ETA + stop names for every saved stop in parallel ──────
-                const results = await Promise.all(currentStops.map(async sd => {
+                // 1. Fetch all stop data in parallel
+                const rawResults = await Promise.all(currentStops.map(async sd => {
                     try {
                         const isNlb = sd.company === 'NLB';
                         const isJoint = !isNlb && JOINT_ROUTES.has(sd.routeId.toUpperCase());
 
-                        // Resolve stop names (cached after first fetch)
+                        // Resolve stop names (cached)
                         let stopNames;
                         if (sd.stopInfo) {
                             let alt = sd.altStopName || null;
                             if (isJoint && !alt) {
                                 const oCo = (sd.company === 'CTB' || sd.company === 'NWFB') ? 'KMB' : 'CTB';
                                 const o = await fetchStopNameFromCo(sd.stopId, oCo);
-                                if (o && o.name_tc !== sd.stopInfo.name_tc) alt = { ...o, co: oCo };
+                                if (o?.name_tc && o.name_tc !== sd.stopInfo.name_tc) alt = { ...o, co: oCo };
                                 sd.altStopName = alt;
                             }
                             stopNames = { primary: sd.stopInfo, alt };
@@ -2220,116 +2245,119 @@
                             stopNames = names;
                         }
 
-                        // Fresh ETA data every call
                         const etaData = await fetchJointEta(sd);
 
                         return {
                             stopKey: makeStopKey(sd),
                             routeId: sd.routeId,
-                            nlbRouteId: sd.nlbRouteId || null,
                             direction: sd.direction,
                             company: sd.company,
                             stopNames,
                             nlbDest: sd.nlbDest || '',
-                            etaData
+                            etaData,
+                            isNlb,
+                            isJoint
                         };
-                    } catch {
-                        return null;
-                    }
+                    } catch { return null; }
                 }));
 
-                const validResults = results.filter(r => r !== null);
+                const results = rawResults.filter(r => r !== null);
 
-                if (!validResults.length) {
+                if (!results.length) {
                     showMessage('🚏', '所有站點均無資料', '請檢查路線及站點');
                     setStatus('error', '無資料');
                     return;
                 }
 
-                // ── 2. Determine whether the container currently holds rows ──────────
                 const container = document.getElementById('busRowsContainer');
-                const hasMessage = !!container.querySelector('.message-container');
 
-                if (hasMessage) {
-                    // First render: wipe message, build all rows fresh
+                // Clear placeholder message if present
+                if (container.querySelector('.message-container')) {
                     container.innerHTML = '';
                     renderedRows.clear();
                 }
 
-                // ── 3. Smart update: diff existing rows vs new data ──────────────────
-                //    Build a flat ordered list of (stopKey, entry, stopNames, isJoint)
-                const desiredRows = [];   // [{stopKey, entry, stopNames, isJoint}]
-
-                for (const result of validResults) {
-                    const isNlb = result.company === 'NLB';
-                    const isJoint = !isNlb && JOINT_ROUTES.has(result.routeId.toUpperCase());
-                    const entries = groupEta(result.etaData, result.direction, isNlb, result.nlbDest);
-
+                // 2. Build desired row list
+                const desiredRows = []; // { rowKey, entry, stopNames, isJoint }
+                for (const result of results) {
+                    const entries = groupEta(
+                        result.etaData, result.direction,
+                        result.isNlb, result.nlbDest
+                    );
                     for (const entry of entries) {
+                        const rowKey = makeRowKey(result.stopKey, entry.route, entry.dir);
                         desiredRows.push({
+                            rowKey,
                             stopKey: result.stopKey,
                             entry,
                             stopNames: result.stopNames,
-                            isJoint
+                            isJoint: result.isJoint
                         });
                     }
                 }
 
-                // Keys that should exist in the DOM after this update
-                const desiredKeySet = new Set(desiredRows.map(r => r.stopKey));
+                const desiredKeySet = new Set(desiredRows.map(r => r.rowKey));
 
-                // Remove stale rows
-                for (const [key, data] of renderedRows) {
-                    if (!desiredKeySet.has(key)) {
+                // 3. Remove stale rows
+                for (const [rk, data] of renderedRows) {
+                    if (!desiredKeySet.has(rk)) {
                         data.element.remove();
-                        renderedRows.delete(key);
+                        renderedRows.delete(rk);
                     }
                 }
 
-                // Add new rows / update existing ones in order
-                for (const { stopKey, entry, stopNames, isJoint } of desiredRows) {
-                    const newSig = getEtaSignature(entry.etas);
+                // 4. Update existing rows / add new rows
+                for (const { rowKey, entry, stopNames, isJoint } of desiredRows) {
+                    const newRawSig = getRawEtaSignature(entry.etas);
 
-                    if (renderedRows.has(stopKey)) {
-                        // Row already in DOM — only touch ETA cell if data changed
-                        const cached = renderedRows.get(stopKey);
-                        if (cached.etaSignature !== newSig) {
-                            updateEtaCellInRow(cached.element, entry.etas);
-                            cached.etaSignature = newSig;
-                        }
-                        // Ensure row is appended in correct order (move to end if needed)
+                    if (renderedRows.has(rowKey)) {
+                        // Row exists — ALWAYS rewrite ETA (minutes change with time)
+                        const cached = renderedRows.get(rowKey);
+                        const dataChanged = (cached.rawEtaSig !== newRawSig);
+
+                        // Always refresh the displayed time
+                        refreshEtaInRow(cached.element, entry.etas, dataChanged);
+
+                        // Update stored raw signature
+                        cached.rawEtaSig = newRawSig;
+
+                        // Ensure correct DOM order
                         container.appendChild(cached.element);
                     } else {
                         // New row
-                        const rowEl = await buildBusRow(entry, stopNames, true, stopKey, isJoint);
+                        const rowEl = await buildBusRow(entry, stopNames, true, rowKey, isJoint);
                         container.appendChild(rowEl);
-                        renderedRows.set(stopKey, { element: rowEl, etaSignature: newSig });
+                        renderedRows.set(rowKey, {
+                            element: rowEl,
+                            rawEtaSig: newRawSig
+                        });
                     }
                 }
 
-                // ── 4. Fallback if container is still empty ──────────────────────────
+                // 5. Fallback
                 if (!container.children.length) {
                     showMessage('🚏', '暫無到站資料', '所選站點目前沒有巴士到站資訊');
                 }
 
-                // ── 5. Update status bar ─────────────────────────────────────────────
+                // 6. Update status
                 document.getElementById('lastUpdate').textContent =
                     `最後更新：${new Date().toLocaleTimeString('zh-HK', { hour12: false })}`;
                 document.getElementById('recordCount').textContent =
                     `顯示 ${currentStops.length} 個站點`;
-                setStatus('ok', `已更新 ${validResults.length}/${currentStops.length} 個站點`);
+                setStatus('ok', `已更新 ${results.length}/${currentStops.length} 個站點`);
 
             } catch (err) {
                 showMessage('❌', '查詢失敗', err.message);
                 setStatus('error', `查詢失敗：${err.message}`);
             } finally {
                 isFetching = false;
-                // Always restart auto-refresh after each cycle (success or fail)
                 if (currentStops.length) startAutoRefresh();
             }
         }
 
-        // ─── Fullscreen / theme toggles ──────────────────────────────────────────────
+        /* ═══════════════════════════════════════════════════════════
+           FULLSCREEN / CLEAR
+           ═══════════════════════════════════════════════════════════ */
         function toggleFullscreenMode() {
             isFullscreenMode = !isFullscreenMode;
             document.body.classList.toggle('fullscreen-mode', isFullscreenMode);
@@ -2338,13 +2366,13 @@
         }
 
         function clearAllStops() {
-            stopAutoRefresh();
             currentStops = [];
             saveStopsToStorage();
             renderedRows.clear();
             showMessage('🔍', '請選擇路線及巴士站以查詢到站時間', '按上方按鈕開始');
             document.getElementById('recordCount').textContent = '顯示 0 條記錄';
             document.getElementById('clearBtn').style.display = 'none';
+            stopAutoRefresh();
         }
 
         function updateClearButton() {
@@ -2352,7 +2380,9 @@
             if (b) b.style.display = currentStops.length > 0 ? 'inline-block' : 'none';
         }
 
-        // ─── Modal / stop selector ───────────────────────────────────────────────────
+        /* ═══════════════════════════════════════════════════════════
+           MODAL / STOP SELECTOR
+           ═══════════════════════════════════════════════════════════ */
         function selectCompany(co) {
             selectedCompany = co;
             document.querySelectorAll('.company-btn').forEach(b =>
@@ -2361,9 +2391,9 @@
             document.getElementById('selectedRouteTitle').textContent = '請先選擇路線及方向';
             document.getElementById('stopList').innerHTML = '<div class="stop-list-empty">尚未載入巴士站。</div>';
             setSelectedDirection(null);
-            const isNlb = co === 'NLB';
-            document.getElementById('directionLabel').style.display = isNlb ? 'none' : '';
-            document.getElementById('directionButtons').style.display = isNlb ? 'none' : '';
+            const n = co === 'NLB';
+            document.getElementById('directionLabel').style.display = n ? 'none' : '';
+            document.getElementById('directionButtons').style.display = n ? 'none' : '';
             loadRouteList(co);
         }
 
@@ -2383,7 +2413,6 @@
                     }));
                     routeListCache.CTB = list;
                     populateRouteSelect(list, 'CTB');
-
                 } else if (apiCo === 'KMB') {
                     if (!routeListCache._KMB_RAW) {
                         const r = await fetch(API.KMB.routeList);
@@ -2416,7 +2445,6 @@
                     if (co === 'LWB') { routeListCache.LWB = lR; populateRouteSelect(lR, 'LWB'); }
                     if (co === 'KMB' && !routeListCache.LWB) routeListCache.LWB = lR;
                     if (co === 'LWB' && !routeListCache.KMB) routeListCache.KMB = kR;
-
                 } else if (apiCo === 'NLB') {
                     const r = await fetch(API.NLB.routeList);
                     const d = await r.json();
@@ -2435,23 +2463,21 @@
         function populateRouteSelect(list, co) {
             const s = document.getElementById('routeSelect');
             s.innerHTML = '';
-            [...list]
-                .sort((a, b) => {
-                    const an = parseInt(a.route) || 0, bn = parseInt(b.route) || 0;
-                    return an !== bn ? an - bn : a.route.localeCompare(b.route);
-                })
-                .forEach(r => {
-                    const o = document.createElement('option');
-                    o.value = r.route;
-                    o.textContent = co === 'NLB'
-                        ? `${r.route} — ${r.orig_tc}`
-                        : `${r.route} — ${r.orig_tc || ''} ↔ ${r.dest_tc || ''}`;
-                    o.dataset.origTc = r.orig_tc || '';
-                    o.dataset.destTc = r.dest_tc || '';
-                    o.dataset.co = co;
-                    if (r.nlbRouteId) o.dataset.nlbRouteId = r.nlbRouteId;
-                    s.appendChild(o);
-                });
+            [...list].sort((a, b) => {
+                const an = parseInt(a.route) || 0, bn = parseInt(b.route) || 0;
+                return an !== bn ? an - bn : a.route.localeCompare(b.route);
+            }).forEach(r => {
+                const o = document.createElement('option');
+                o.value = r.route;
+                o.textContent = co === 'NLB'
+                    ? `${r.route} — ${r.orig_tc}`
+                    : `${r.route} — ${r.orig_tc || ''} ↔ ${r.dest_tc || ''}`;
+                o.dataset.origTc = r.orig_tc || '';
+                o.dataset.destTc = r.dest_tc || '';
+                o.dataset.co = co;
+                if (r.nlbRouteId) o.dataset.nlbRouteId = r.nlbRouteId;
+                s.appendChild(o);
+            });
         }
 
         function openStopSelector() {
@@ -2460,9 +2486,9 @@
             document.getElementById('selectedRouteTitle').textContent = '請先選擇巴士公司、路線及方向';
             document.getElementById('stopList').innerHTML = '<div class="stop-list-empty">尚未載入巴士站。</div>';
             setSelectedDirection(null);
-            const isNlb = selectedCompany === 'NLB';
-            document.getElementById('directionLabel').style.display = isNlb ? 'none' : '';
-            document.getElementById('directionButtons').style.display = isNlb ? 'none' : '';
+            const n = selectedCompany === 'NLB';
+            document.getElementById('directionLabel').style.display = n ? 'none' : '';
+            document.getElementById('directionButtons').style.display = n ? 'none' : '';
             loadRouteList(selectedCompany);
         }
 
@@ -2502,11 +2528,11 @@
             const co = selectedCompany;
 
             if (!opt) { list.innerHTML = '<div class="stop-list-empty">請先選擇路線。</div>'; return; }
+            const route = opt.value;
             if (co !== 'NLB' && !selectedDirection) {
                 list.innerHTML = '<div class="stop-list-empty">請先選擇方向。</div>'; return;
             }
 
-            const route = opt.value;
             if (btn) btn.disabled = true;
             list.innerHTML = '<div class="stop-list-empty">正在載入...</div>';
 
@@ -2522,7 +2548,6 @@
                         const info = await fetchStopName(s.stop, 'CTB');
                         appendStopItem(list, s.stop, route, info, 'CTB', null, null, null);
                     }
-
                 } else if (co === 'KMB' || co === 'LWB') {
                     let st = 1;
                     if (routeListCache._KMB_FULL) {
@@ -2540,7 +2565,6 @@
                         const info = await fetchStopName(s.stop, 'KMB');
                         appendStopItem(list, s.stop, route, info, co, st, null, null);
                     }
-
                 } else if (co === 'NLB') {
                     const nid = opt.dataset.nlbRouteId || '';
                     const nd = opt.dataset.destTc || opt.dataset.origTc || route;
@@ -2564,7 +2588,6 @@
                 if (title) title.textContent = selectedCompany === 'NLB'
                     ? `已選路線：${route}（${opt.dataset.origTc || ''}）`
                     : `已選路線：${route}（${opt.dataset.origTc || ''} ↔ ${opt.dataset.destTc || ''}）`;
-
             } catch {
                 list.innerHTML = '<div class="stop-list-empty">載入錯誤。</div>';
             } finally {
@@ -2572,20 +2595,19 @@
             }
         }
 
-        function appendStopItem(container, sid, route, info, company, st, nrid, nd) {
+        function appendStopItem(c, sid, route, info, company, st, nrid, nd) {
             const item = document.createElement('div');
             item.className = 'stop-list-item';
             item.onclick = () => selectStopFromModal(sid, route, info, company, st, nrid, nd);
-            item.innerHTML = `<div class="stop-list-item-main">${info.name_tc || sid}</div>
-                          <div class="stop-list-item-sub">${info.name_en || ''} （站號：${sid}）</div>`;
-            container.appendChild(item);
+            item.innerHTML = `<div class="stop-list-item-main">${info.name_tc || sid}</div>` +
+                `<div class="stop-list-item-sub">${info.name_en || ''} （站號：${sid}）</div>`;
+            c.appendChild(item);
         }
 
         async function selectStopFromModal(sid, rno, si, co, st, nrid, nd) {
             const dir = co === 'NLB' ? null : selectedDirection;
             const sd = {
-                stopId: sid,
-                routeId: rno,
+                stopId: sid, routeId: rno,
                 nlbRouteId: nrid || null,
                 direction: dir,
                 company: co || selectedCompany,
@@ -2599,8 +2621,14 @@
             const idx = currentStops.findIndex(s => makeStopKey(s) === key);
 
             if (idx >= 0) {
-                // Toggle off: remove
                 currentStops.splice(idx, 1);
+                // Remove rendered rows for this stop
+                for (const [rk, data] of renderedRows) {
+                    if (rk.startsWith(key + '||')) {
+                        data.element.remove();
+                        renderedRows.delete(rk);
+                    }
+                }
             } else {
                 currentStops.push(sd);
             }
@@ -2609,21 +2637,18 @@
             closeStopSelector();
             updateClearButton();
 
-            // Full re-render since stop list changed
-            renderedRows.clear();
-            const container = document.getElementById('busRowsContainer');
-            container.innerHTML = '';
-
             if (currentStops.length > 0) {
                 stopAutoRefresh();
-                fetchMultiETA();   // will call startAutoRefresh() internally
+                fetchMultiETA();
             } else {
                 showMessage('🔍', '請選擇路線及巴士站以查詢到站時間', '按上方按鈕開始');
                 stopAutoRefresh();
             }
         }
 
-        // ─── Drag & Drop ─────────────────────────────────────────────────────────────
+        /* ═══════════════════════════════════════════════════════════
+           DRAG & DROP
+           ═══════════════════════════════════════════════════════════ */
         let isDragging = false, dragState = null;
 
         function initDragDrop() {
@@ -2638,7 +2663,7 @@
         }
 
         function getPointerY(e) {
-            return e.touches && e.touches.length ? e.touches[0].clientY : e.clientY;
+            return e.touches?.length ? e.touches[0].clientY : e.clientY;
         }
 
         function onDragStart(e) {
@@ -2677,9 +2702,9 @@
             if (!isDragging || !dragState) return;
             e.preventDefault();
             const y = getPointerY(e);
-            const { row, placeholder, offsetY } = dragState;
+            const { row, placeholder } = dragState;
 
-            row.style.top = (y - offsetY) + 'px';
+            row.style.top = (y - dragState.offsetY) + 'px';
 
             const container = document.getElementById('busRowsContainer');
             const siblings = [...container.querySelectorAll('.bus-row,.drag-placeholder')];
@@ -2707,9 +2732,8 @@
             const container = document.getElementById('busRowsContainer');
 
             row.classList.remove('dragging');
-            row.style.position = ''; row.style.width = '';
-            row.style.height = ''; row.style.left = '';
-            row.style.top = ''; row.style.zIndex = '';
+            row.style.position = ''; row.style.width = ''; row.style.height = '';
+            row.style.left = ''; row.style.top = ''; row.style.zIndex = '';
 
             container.insertBefore(row, placeholder);
             placeholder.remove();
@@ -2726,27 +2750,38 @@
             const keyToStop = new Map();
             currentStops.forEach(s => keyToStop.set(makeStopKey(s), s));
 
+            // Collect unique stop keys in DOM order
+            const seen = new Set();
             const newOrder = [];
             rows.forEach(row => {
                 const k = row.dataset.stopKey;
-                if (keyToStop.has(k)) newOrder.push(keyToStop.get(k));
+                if (k && keyToStop.has(k) && !seen.has(k)) {
+                    seen.add(k);
+                    newOrder.push(keyToStop.get(k));
+                }
             });
 
             if (newOrder.length === currentStops.length) {
                 currentStops = newOrder;
                 saveStopsToStorage();
-                // Rebuild renderedRows map in new order (elements are already in correct DOM order)
+
+                // Rebuild renderedRows map
                 renderedRows.clear();
                 rows.forEach(row => {
-                    renderedRows.set(row.dataset.stopKey, {
-                        element: row,
-                        etaSignature: row.querySelector('.eta-cell')?.innerHTML || ''
-                    });
+                    const rk = row.dataset.rowKey;
+                    if (rk) {
+                        renderedRows.set(rk, {
+                            element: row,
+                            rawEtaSig: '' // will be refreshed on next cycle
+                        });
+                    }
                 });
             }
         }
 
-        // ─── Keyboard ────────────────────────────────────────────────────────────────
+        /* ═══════════════════════════════════════════════════════════
+           KEYBOARD
+           ═══════════════════════════════════════════════════════════ */
         document.addEventListener('keydown', e => {
             if (e.key === 'Escape') {
                 closeStopSelector();
@@ -2754,14 +2789,15 @@
             }
         });
 
-        // ─── Boot ────────────────────────────────────────────────────────────────────
+        /* ═══════════════════════════════════════════════════════════
+           BOOT
+           ═══════════════════════════════════════════════════════════ */
         loadThemePreference();
         initDragDrop();
 
         const hadSaved = loadStopsFromStorage();
         if (hadSaved && currentStops.length > 0) {
-            // Small delay so the page finishes painting first
-            setTimeout(() => fetchMultiETA(), 300);
+            setTimeout(() => fetchMultiETA(), 400);
         }
     </script>
 </body>
