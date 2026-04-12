@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -7,7 +8,12 @@
     <title>巴士到站時間預報</title>
     <style>
         /* ── Reset & Base ── */
-        * { margin: 0; padding: 0; -webkit-box-sizing: border-box; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            -webkit-box-sizing: border-box;
+            box-sizing: border-box;
+        }
 
         body {
             background-color: #f5f5f5;
@@ -18,7 +24,10 @@
             -webkit-text-size-adjust: 100%;
         }
 
-        body.dark-mode { background-color: #0a0e27; color: #fff; }
+        body.dark-mode {
+            background-color: #0a0e27;
+            color: #fff;
+        }
 
         /* ── Header ── */
         .header {
@@ -33,14 +42,17 @@
             -webkit-box-align: center;
             -webkit-align-items: center;
             align-items: center;
-            -webkit-box-shadow: 0 2px 8px rgba(0,0,0,.15);
-            box-shadow: 0 2px 8px rgba(0,0,0,.15);
+            -webkit-box-shadow: 0 2px 8px rgba(0, 0, 0, .15);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, .15);
             position: -webkit-sticky;
             position: sticky;
             top: 0;
             z-index: 100;
         }
-        body.dark-mode .header { background: #141a3a; }
+
+        body.dark-mode .header {
+            background: #141a3a;
+        }
 
         .header-left {
             display: -webkit-box;
@@ -51,11 +63,29 @@
             align-items: center;
             gap: 10px;
         }
-        .header-icon { font-size: 28px; }
-        .header-title-text { font-size: 20px; font-weight: 700; color: #333; }
-        body.dark-mode .header-title-text { color: #fff; }
-        .header-subtitle { font-size: 11px; color: #666; }
-        body.dark-mode .header-subtitle { color: rgba(255,255,255,.65); }
+
+        .header-icon {
+            font-size: 28px;
+        }
+
+        .header-title-text {
+            font-size: 20px;
+            font-weight: 700;
+            color: #333;
+        }
+
+        body.dark-mode .header-title-text {
+            color: #fff;
+        }
+
+        .header-subtitle {
+            font-size: 11px;
+            color: #666;
+        }
+
+        body.dark-mode .header-subtitle {
+            color: rgba(255, 255, 255, .65);
+        }
 
         .header-right {
             text-align: right;
@@ -79,9 +109,19 @@
             font-variant-numeric: tabular-nums;
             letter-spacing: 1px;
         }
-        body.dark-mode .current-time { color: #fff; }
-        .current-date { font-size: 12px; color: #777; }
-        body.dark-mode .current-date { color: rgba(255,255,255,.65); }
+
+        body.dark-mode .current-time {
+            color: #fff;
+        }
+
+        .current-date {
+            font-size: 12px;
+            color: #777;
+        }
+
+        body.dark-mode .current-date {
+            color: rgba(255, 255, 255, .65);
+        }
 
         .header-btns {
             display: -webkit-box;
@@ -101,7 +141,12 @@
             cursor: pointer;
             font-family: inherit;
         }
-        body.dark-mode .btn-sm { background: rgba(255,255,255,.1); color: #fff; border-color: rgba(255,255,255,.2); }
+
+        body.dark-mode .btn-sm {
+            background: rgba(255, 255, 255, .1);
+            color: #fff;
+            border-color: rgba(255, 255, 255, .2);
+        }
 
         /* ── Controls ── */
         .controls {
@@ -115,7 +160,11 @@
             flex-wrap: wrap;
             border-bottom: 1px solid #e0e0e0;
         }
-        body.dark-mode .controls { background: rgba(255,255,255,.05); border-bottom-color: rgba(255,255,255,.1); }
+
+        body.dark-mode .controls {
+            background: rgba(255, 255, 255, .05);
+            border-bottom-color: rgba(255, 255, 255, .1);
+        }
 
         .btn-primary {
             padding: 8px 20px;
@@ -128,6 +177,7 @@
             cursor: pointer;
             font-family: inherit;
         }
+
         .btn-secondary-ctrl {
             padding: 8px 16px;
             font-size: 14px;
@@ -138,9 +188,23 @@
             cursor: pointer;
             font-family: inherit;
         }
-        body.dark-mode .btn-secondary-ctrl { background: rgba(255,255,255,.08); color: rgba(255,255,255,.85); border-color: rgba(255,255,255,.2); }
-        .btn-danger { background: #ffebee; color: #c62828; border-color: #ef9a9a; }
-        body.dark-mode .btn-danger { background: rgba(198,40,40,.15); color: #ef5350; }
+
+        body.dark-mode .btn-secondary-ctrl {
+            background: rgba(255, 255, 255, .08);
+            color: rgba(255, 255, 255, .85);
+            border-color: rgba(255, 255, 255, .2);
+        }
+
+        .btn-danger {
+            background: #ffebee;
+            color: #c62828;
+            border-color: #ef9a9a;
+        }
+
+        body.dark-mode .btn-danger {
+            background: rgba(198, 40, 40, .15);
+            color: #ef5350;
+        }
 
         /* ── Status Bar ── */
         .status-bar {
@@ -159,11 +223,37 @@
             color: #757575;
             border-bottom: 1px solid #e0e0e0;
         }
-        body.dark-mode .status-bar { background: rgba(255,255,255,.03); color: rgba(255,255,255,.55); border-bottom-color: rgba(255,255,255,.08); }
-        .status-indicator { display: -webkit-box; display: -webkit-flex; display: flex; -webkit-box-align: center; -webkit-align-items: center; align-items: center; gap: 6px; }
-        .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #4caf50; }
-        .status-dot.loading { background: #ff9800; }
-        .status-dot.error { background: #f44336; }
+
+        body.dark-mode .status-bar {
+            background: rgba(255, 255, 255, .03);
+            color: rgba(255, 255, 255, .55);
+            border-bottom-color: rgba(255, 255, 255, .08);
+        }
+
+        .status-indicator {
+            display: -webkit-box;
+            display: -webkit-flex;
+            display: flex;
+            -webkit-box-align: center;
+            -webkit-align-items: center;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #4caf50;
+        }
+
+        .status-dot.loading {
+            background: #ff9800;
+        }
+
+        .status-dot.error {
+            background: #f44336;
+        }
 
         /* ── Table Header ── */
         .table-header {
@@ -183,12 +273,46 @@
             top: 0;
             z-index: 50;
         }
-        body.dark-mode .table-header { background: rgba(255,255,255,.06); color: rgba(255,255,255,.45); border-bottom-color: rgba(255,255,255,.12); }
-        .th-route { width: 100px; -webkit-flex-shrink: 0; flex-shrink: 0; text-align: center; }
-        .th-stop  { -webkit-box-flex: 1; -webkit-flex: 1; flex: 1; padding-left: 12px; }
-        .th-co    { width: 90px; -webkit-flex-shrink: 0; flex-shrink: 0; text-align: center; }
-        .th-eta   { width: 150px; -webkit-flex-shrink: 0; flex-shrink: 0; text-align: center; }
-        .th-del   { width: 36px; -webkit-flex-shrink: 0; flex-shrink: 0; }
+
+        body.dark-mode .table-header {
+            background: rgba(255, 255, 255, .06);
+            color: rgba(255, 255, 255, .45);
+            border-bottom-color: rgba(255, 255, 255, .12);
+        }
+
+        .th-route {
+            width: 100px;
+            -webkit-flex-shrink: 0;
+            flex-shrink: 0;
+            text-align: center;
+        }
+
+        .th-stop {
+            -webkit-box-flex: 1;
+            -webkit-flex: 1;
+            flex: 1;
+            padding-left: 12px;
+        }
+
+        .th-co {
+            width: 90px;
+            -webkit-flex-shrink: 0;
+            flex-shrink: 0;
+            text-align: center;
+        }
+
+        .th-eta {
+            width: 150px;
+            -webkit-flex-shrink: 0;
+            flex-shrink: 0;
+            text-align: center;
+        }
+
+        .th-del {
+            width: 36px;
+            -webkit-flex-shrink: 0;
+            flex-shrink: 0;
+        }
 
         /* ── Bus Rows Container ── */
         .bus-rows-container {
@@ -196,7 +320,10 @@
             -webkit-overflow-scrolling: touch;
             background: #fff;
         }
-        body.dark-mode .bus-rows-container { background: #0a0e27; }
+
+        body.dark-mode .bus-rows-container {
+            background: #0a0e27;
+        }
 
         /* ── Bus Row ── */
         .bus-row {
@@ -205,26 +332,59 @@
             display: flex;
             padding: 12px 16px;
             background: #fff;
-            border-bottom: 1px solid rgba(0,0,0,.06);
+            border-bottom: 1px solid rgba(0, 0, 0, .06);
             -webkit-box-align: center;
             -webkit-align-items: center;
             align-items: center;
             position: relative;
             border-left: 4px solid transparent;
         }
-        body.dark-mode .bus-row { background: rgba(255,255,255,.02); border-bottom-color: rgba(255,255,255,.06); }
-        .bus-row:nth-child(even) { background: #fafafa; }
-        body.dark-mode .bus-row:nth-child(even) { background: rgba(255,255,255,.04); }
+
+        body.dark-mode .bus-row {
+            background: rgba(255, 255, 255, .02);
+            border-bottom-color: rgba(255, 255, 255, .06);
+        }
+
+        .bus-row:nth-child(even) {
+            background: #fafafa;
+        }
+
+        body.dark-mode .bus-row:nth-child(even) {
+            background: rgba(255, 255, 255, .04);
+        }
 
         /* Accent bar via border-left */
-        .bus-row.accent-ctb  { border-left-color: #FFDA44; }
-        .bus-row.accent-kmb  { border-left-color: #C62828; }
-        .bus-row.accent-lwb  { border-left-color: #E65100; }
-        .bus-row.accent-nlb  { border-left-color: #2E7D32; }
-        .bus-row.accent-joint{ border-left-color: #EF5350; }
-        .bus-row.accent-night  { border-left-color: #283593; }
-        .bus-row.accent-express{ border-left-color: #1565C0; }
-        .bus-row.accent-special{ border-left-color: #6A1B9A; }
+        .bus-row.accent-ctb {
+            border-left-color: #1976D2;
+        }
+
+        .bus-row.accent-kmb {
+            border-left-color: #C62828;
+        }
+
+        .bus-row.accent-lwb {
+            border-left-color: #E65100;
+        }
+
+        .bus-row.accent-nlb {
+            border-left-color: #2E7D32;
+        }
+
+        .bus-row.accent-joint {
+            border-left-color: #EF5350;
+        }
+
+        .bus-row.accent-night {
+            border-left-color: #283593;
+        }
+
+        .bus-row.accent-express {
+            border-left-color: #1565C0;
+        }
+
+        .bus-row.accent-special {
+            border-left-color: #6A1B9A;
+        }
 
         /* Drag handle */
         .drag-handle {
@@ -240,7 +400,10 @@
             touch-action: none;
             padding-right: 4px;
         }
-        body.dark-mode .drag-handle { color: rgba(255,255,255,.2); }
+
+        body.dark-mode .drag-handle {
+            color: rgba(255, 255, 255, .2);
+        }
 
         /* Route Number Cell */
         .route-cell {
@@ -249,6 +412,7 @@
             flex-shrink: 0;
             text-align: center;
         }
+
         .route-number {
             font-family: 'Arial Black', Arial, sans-serif;
             font-weight: 900;
@@ -257,21 +421,66 @@
             letter-spacing: -1px;
             display: block;
         }
-        .color-ctb  { color: #FFCA28; }
-        .color-kmb  { color: #C62828; }
-        .color-lwb  { color: #E65100; }
-        .color-nlb  { color: #2E7D32; }
-        .color-mtr  { color: #455A64; }
-        .color-night  { color: #3949AB; }
-        .color-express{ color: #1976D2; }
-        .color-special{ color: #7B1FA2; }
-        body.dark-mode .color-ctb    { color: #FFE082; }
-        body.dark-mode .color-kmb    { color: #EF5350; }
-        body.dark-mode .color-lwb    { color: #FFB74D; }
-        body.dark-mode .color-nlb    { color: #81C784; }
-        body.dark-mode .color-night  { color: #9FA8DA; }
-        body.dark-mode .color-express{ color: #64B5F6; }
-        body.dark-mode .color-special{ color: #CE93D8; }
+
+        .color-ctb {
+            color: #FFCA28;
+        }
+
+        .color-kmb {
+            color: #C62828;
+        }
+
+        .color-lwb {
+            color: #E65100;
+        }
+
+        .color-nlb {
+            color: #2E7D32;
+        }
+
+        .color-mtr {
+            color: #455A64;
+        }
+
+        .color-night {
+            color: #3949AB;
+        }
+
+        .color-express {
+            color: #1976D2;
+        }
+
+        .color-special {
+            color: #7B1FA2;
+        }
+
+        body.dark-mode .color-ctb {
+            color: #FFE082;
+        }
+
+        body.dark-mode .color-kmb {
+            color: #EF5350;
+        }
+
+        body.dark-mode .color-lwb {
+            color: #FFB74D;
+        }
+
+        body.dark-mode .color-nlb {
+            color: #81C784;
+        }
+
+        body.dark-mode .color-night {
+            color: #9FA8DA;
+        }
+
+        body.dark-mode .color-express {
+            color: #64B5F6;
+        }
+
+        body.dark-mode .color-special {
+            color: #CE93D8;
+        }
 
         /* Stop Cell */
         .stop-cell {
@@ -282,6 +491,7 @@
             min-width: 0;
             overflow: hidden;
         }
+
         .dest-direction {
             font-size: 20px;
             font-weight: 700;
@@ -291,7 +501,11 @@
             overflow: hidden;
             text-overflow: ellipsis;
         }
-        body.dark-mode .dest-direction { color: #fff; }
+
+        body.dark-mode .dest-direction {
+            color: #fff;
+        }
+
         .stop-name {
             font-size: 12px;
             color: #888;
@@ -300,9 +514,20 @@
             overflow: hidden;
             text-overflow: ellipsis;
         }
-        body.dark-mode .stop-name { color: rgba(255,255,255,.5); }
-        .stop-name-en { font-size: 10px; color: #aaa; }
-        body.dark-mode .stop-name-en { color: rgba(255,255,255,.3); }
+
+        body.dark-mode .stop-name {
+            color: rgba(255, 255, 255, .5);
+        }
+
+        .stop-name-en {
+            font-size: 10px;
+            color: #aaa;
+        }
+
+        body.dark-mode .stop-name-en {
+            color: rgba(255, 255, 255, .3);
+        }
+
         .stop-name-alt {
             font-size: 10px;
             color: #aaa;
@@ -311,7 +536,11 @@
             overflow: hidden;
             text-overflow: ellipsis;
         }
-        body.dark-mode .stop-name-alt { color: rgba(255,255,255,.3); }
+
+        body.dark-mode .stop-name-alt {
+            color: rgba(255, 255, 255, .3);
+        }
+
         .alt-badge {
             display: inline-block;
             font-size: 9px;
@@ -321,7 +550,11 @@
             background: #FFEBEE;
             color: #C62828;
         }
-        body.dark-mode .alt-badge { background: rgba(239,83,80,.2); color: #EF5350; }
+
+        body.dark-mode .alt-badge {
+            background: rgba(239, 83, 80, .2);
+            color: #EF5350;
+        }
 
         /* Company Cell */
         .company-cell {
@@ -339,31 +572,93 @@
             -webkit-justify-content: center;
             justify-content: center;
         }
+
         .company-logo {
             max-height: 32px;
             max-width: 80px;
             width: auto;
             object-fit: contain;
         }
-        .company-logo-ctb { max-height: 48px; max-width: 85px; }
-        .company-logo-nlb { max-height: 56px; max-width: 80px; }
+
+        .company-logo-ctb {
+            max-height: 48px;
+            max-width: 85px;
+        }
+
+        .company-logo-nlb {
+            max-height: 56px;
+            max-width: 80px;
+        }
+
         .company-tag-sm {
             font-size: 11px;
             font-weight: 700;
             padding: 3px 8px;
             border-radius: 4px;
         }
-        .tag-ctb { background: #FFFDE7; color: #F9A825; }
-        .tag-kmb { background: #FFEBEE; color: #C62828; }
-        .tag-lwb { background: #FFF3E0; color: #E65100; }
-        .tag-nlb { background: #E8F5E9; color: #2E7D32; }
-        body.dark-mode .tag-ctb { background: rgba(255,224,130,.15); color: #FFE082; }
-        body.dark-mode .tag-kmb { background: rgba(239,83,80,.12); color: #EF5350; }
-        body.dark-mode .tag-lwb { background: rgba(255,167,38,.12); color: #FFB74D; }
-        body.dark-mode .tag-nlb { background: rgba(102,187,106,.12); color: #81C784; }
-        .co-badge-group { display: -webkit-box; display: -webkit-flex; display: flex; -webkit-box-orient: vertical; -webkit-box-direction: normal; -webkit-flex-direction: column; flex-direction: column; -webkit-box-align: center; -webkit-align-items: center; align-items: center; gap: 2px; }
-        .co-badge-group .company-logo { max-height: 20px; max-width: 70px; }
-        .co-badge-group .company-logo-ctb { max-height: 30px; }
+
+        .tag-ctb {
+            background: #FFFDE7;
+            color: #F9A825;
+        }
+
+        .tag-kmb {
+            background: #FFEBEE;
+            color: #C62828;
+        }
+
+        .tag-lwb {
+            background: #FFF3E0;
+            color: #E65100;
+        }
+
+        .tag-nlb {
+            background: #E8F5E9;
+            color: #2E7D32;
+        }
+
+        body.dark-mode .tag-ctb {
+            background: rgba(255, 224, 130, .15);
+            color: #FFE082;
+        }
+
+        body.dark-mode .tag-kmb {
+            background: rgba(239, 83, 80, .12);
+            color: #EF5350;
+        }
+
+        body.dark-mode .tag-lwb {
+            background: rgba(255, 167, 38, .12);
+            color: #FFB74D;
+        }
+
+        body.dark-mode .tag-nlb {
+            background: rgba(102, 187, 106, .12);
+            color: #81C784;
+        }
+
+        .co-badge-group {
+            display: -webkit-box;
+            display: -webkit-flex;
+            display: flex;
+            -webkit-box-orient: vertical;
+            -webkit-box-direction: normal;
+            -webkit-flex-direction: column;
+            flex-direction: column;
+            -webkit-box-align: center;
+            -webkit-align-items: center;
+            align-items: center;
+            gap: 2px;
+        }
+
+        .co-badge-group .company-logo {
+            max-height: 20px;
+            max-width: 70px;
+        }
+
+        .co-badge-group .company-logo-ctb {
+            max-height: 30px;
+        }
 
         /* ETA Cell */
         .eta-cell {
@@ -381,6 +676,7 @@
             -webkit-justify-content: center;
             justify-content: center;
         }
+
         .eta-primary-cell {
             display: -webkit-box;
             display: -webkit-flex;
@@ -393,14 +689,25 @@
             -webkit-align-items: flex-end;
             align-items: flex-end;
         }
+
         .eta-min {
             font-size: 36px;
             font-weight: 900;
             font-variant-numeric: tabular-nums;
             line-height: 1;
         }
-        .eta-unit { font-size: 12px; font-weight: 500; opacity: .6; }
-        .eta-rmk  { font-size: 9px; opacity: .5; margin-top: 1px; }
+
+        .eta-unit {
+            font-size: 12px;
+            font-weight: 500;
+            opacity: .6;
+        }
+
+        .eta-rmk {
+            font-size: 9px;
+            opacity: .5;
+            margin-top: 1px;
+        }
 
         .eta-secondary-cell {
             display: -webkit-box;
@@ -414,31 +721,123 @@
             border-left: 1px solid #e0e0e0;
             padding-left: 8px;
         }
-        body.dark-mode .eta-secondary-cell { border-left-color: rgba(255,255,255,.15); }
-        .eta-sec-row { display: -webkit-box; display: -webkit-flex; display: flex; -webkit-box-align: baseline; -webkit-align-items: baseline; align-items: baseline; gap: 2px; }
-        .eta-sec-min { font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1; }
-        .eta-sec-unit { font-size: 10px; opacity: .5; }
 
-        .eta-na { font-size: 13px; color: #bdbdbd; text-align: center; }
-        body.dark-mode .eta-na { color: rgba(255,255,255,.25); }
+        body.dark-mode .eta-secondary-cell {
+            border-left-color: rgba(255, 255, 255, .15);
+        }
+
+        .eta-sec-row {
+            display: -webkit-box;
+            display: -webkit-flex;
+            display: flex;
+            -webkit-box-align: baseline;
+            -webkit-align-items: baseline;
+            align-items: baseline;
+            gap: 2px;
+        }
+
+        .eta-sec-min {
+            font-size: 16px;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+            line-height: 1;
+        }
+
+        .eta-sec-unit {
+            font-size: 10px;
+            opacity: .5;
+        }
+
+        .eta-na {
+            font-size: 13px;
+            color: #bdbdbd;
+            text-align: center;
+        }
+
+        body.dark-mode .eta-na {
+            color: rgba(255, 255, 255, .25);
+        }
 
         /* ETA colours */
-        .eta-arriving { color: #2E7D32; }
-        body.dark-mode .eta-arriving { color: #81C784; }
-        .eta-soon { color: #E65100; }
-        body.dark-mode .eta-soon { color: #FFB74D; }
-        .eta-normal { color: #1565C0; }
-        body.dark-mode .eta-normal { color: #64B5F6; }
+        .eta-arriving {
+            color: #2E7D32;
+        }
+
+        body.dark-mode .eta-arriving {
+            color: #81C784;
+        }
+
+        .eta-soon {
+            color: #E65100;
+        }
+
+        body.dark-mode .eta-soon {
+            color: #FFB74D;
+        }
+
+        .eta-normal {
+            color: #1565C0;
+        }
+
+        body.dark-mode .eta-normal {
+            color: #64B5F6;
+        }
 
         /* Blink for arriving */
-        .blink { -webkit-animation: blink 1s infinite; animation: blink 1s infinite; }
-        @-webkit-keyframes blink { 0%,100%{opacity:1} 50%{opacity:.4} }
-        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.4} }
+        .blink {
+            -webkit-animation: blink 1s infinite;
+            animation: blink 1s infinite;
+        }
+
+        @-webkit-keyframes blink {
+
+            0%,
+            100% {
+                opacity: 1
+            }
+
+            50% {
+                opacity: .4
+            }
+        }
+
+        @keyframes blink {
+
+            0%,
+            100% {
+                opacity: 1
+            }
+
+            50% {
+                opacity: .4
+            }
+        }
 
         /* ETA update flash */
-        .eta-flash { -webkit-animation: etaFlash .5s ease; animation: etaFlash .5s ease; }
-        @-webkit-keyframes etaFlash { 0%{opacity:.3} 100%{opacity:1} }
-        @keyframes etaFlash { 0%{opacity:.3} 100%{opacity:1} }
+        .eta-flash {
+            -webkit-animation: etaFlash .5s ease;
+            animation: etaFlash .5s ease;
+        }
+
+        @-webkit-keyframes etaFlash {
+            0% {
+                opacity: .3
+            }
+
+            100% {
+                opacity: 1
+            }
+        }
+
+        @keyframes etaFlash {
+            0% {
+                opacity: .3
+            }
+
+            100% {
+                opacity: 1
+            }
+        }
 
         /* Remove Button */
         .remove-cell {
@@ -455,53 +854,106 @@
             -webkit-justify-content: center;
             justify-content: center;
         }
+
         .row-remove-btn {
-            width: 28px; height: 28px;
-            border: none; background: transparent;
-            border-radius: 50%; cursor: pointer;
-            font-size: 14px; color: #bbb;
-            display: -webkit-box; display: -webkit-flex; display: flex;
-            -webkit-box-align: center; -webkit-align-items: center; align-items: center;
-            -webkit-box-pack: center; -webkit-justify-content: center; justify-content: center;
+            width: 28px;
+            height: 28px;
+            border: none;
+            background: transparent;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 14px;
+            color: #bbb;
+            display: -webkit-box;
+            display: -webkit-flex;
+            display: flex;
+            -webkit-box-align: center;
+            -webkit-align-items: center;
+            align-items: center;
+            -webkit-box-pack: center;
+            -webkit-justify-content: center;
+            justify-content: center;
         }
-        .row-remove-btn:active { background: rgba(244,67,54,.15); color: #e53935; }
+
+        .row-remove-btn:active {
+            background: rgba(244, 67, 54, .15);
+            color: #e53935;
+        }
 
         /* Message */
-        .message-container { text-align: center; padding: 60px 20px; }
-        .message-container .icon { font-size: 48px; margin-bottom: 12px; }
-        .message-container .text { font-size: 18px; color: #616161; }
-        .message-container .subtext { font-size: 13px; color: #9e9e9e; margin-top: 8px; }
-        body.dark-mode .message-container .text { color: rgba(255,255,255,.7); }
-        body.dark-mode .message-container .subtext { color: rgba(255,255,255,.4); }
+        .message-container {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .message-container .icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+
+        .message-container .text {
+            font-size: 18px;
+            color: #616161;
+        }
+
+        .message-container .subtext {
+            font-size: 13px;
+            color: #9e9e9e;
+            margin-top: 8px;
+        }
+
+        body.dark-mode .message-container .text {
+            color: rgba(255, 255, 255, .7);
+        }
+
+        body.dark-mode .message-container .subtext {
+            color: rgba(255, 255, 255, .4);
+        }
 
         /* Drag placeholder */
         .drag-placeholder {
             border: 2px dashed #90caf9;
             border-radius: 4px;
-            background: rgba(25,118,210,.05);
+            background: rgba(25, 118, 210, .05);
         }
-        body.dark-mode .drag-placeholder { background: rgba(66,165,245,.06); border-color: rgba(66,165,245,.3); }
+
+        body.dark-mode .drag-placeholder {
+            background: rgba(66, 165, 245, .06);
+            border-color: rgba(66, 165, 245, .3);
+        }
 
         /* Dragging row */
         .bus-row.dragging {
             position: fixed !important;
             z-index: 1000 !important;
             pointer-events: none !important;
-            -webkit-box-shadow: 0 8px 24px rgba(0,0,0,.2) !important;
-            box-shadow: 0 8px 24px rgba(0,0,0,.2) !important;
+            -webkit-box-shadow: 0 8px 24px rgba(0, 0, 0, .2) !important;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, .2) !important;
             opacity: .92 !important;
             border: 2px solid #1976d2 !important;
             border-radius: 6px !important;
         }
-        body.dark-mode .bus-row.dragging { border-color: #42a5f5 !important; background: #151c34 !important; }
-        body.is-dragging { overflow: hidden !important; }
-        body.is-dragging .bus-rows-container { overflow: hidden !important; }
+
+        body.dark-mode .bus-row.dragging {
+            border-color: #42a5f5 !important;
+            background: #151c34 !important;
+        }
+
+        body.is-dragging {
+            overflow: hidden !important;
+        }
+
+        body.is-dragging .bus-rows-container {
+            overflow: hidden !important;
+        }
 
         /* ── FULLSCREEN MODE ── */
         body.fullscreen-mode .header,
         body.fullscreen-mode .controls,
         body.fullscreen-mode .status-bar,
-        body.fullscreen-mode .table-header { display: none !important; }
+        body.fullscreen-mode .table-header {
+            display: none !important;
+        }
 
         body.fullscreen-mode .bus-rows-container {
             height: 100vh;
@@ -511,8 +963,14 @@
             -webkit-overflow-scrolling: touch;
             background: #fff;
         }
-        body.dark-mode.fullscreen-mode .bus-rows-container { background: #0d1117; }
-        body.fullscreen-mode .bus-rows-container::-webkit-scrollbar { display: none; }
+
+        body.dark-mode.fullscreen-mode .bus-rows-container {
+            background: #0d1117;
+        }
+
+        body.fullscreen-mode .bus-rows-container::-webkit-scrollbar {
+            display: none;
+        }
 
         body.fullscreen-mode .bus-row {
             /* Height = 20% of viewport. Use padding trick for older browsers. */
@@ -520,15 +978,23 @@
             max-height: 20vh;
             height: 20vh;
             padding: 0 2vw !important;
-            border-bottom: 1px solid rgba(0,0,0,.06) !important;
+            border-bottom: 1px solid rgba(0, 0, 0, .06) !important;
             border-radius: 0 !important;
         }
-        body.dark-mode.fullscreen-mode .bus-row { border-bottom-color: rgba(255,255,255,.06) !important; }
+
+        body.dark-mode.fullscreen-mode .bus-row {
+            border-bottom-color: rgba(255, 255, 255, .06) !important;
+        }
 
         body.fullscreen-mode .drag-handle,
-        body.fullscreen-mode .remove-cell { display: none !important; }
+        body.fullscreen-mode .remove-cell {
+            display: none !important;
+        }
 
-        body.fullscreen-mode .route-cell { width: 20vw; }
+        body.fullscreen-mode .route-cell {
+            width: 20vw;
+        }
+
         body.fullscreen-mode .route-number {
             font-size: 10vw;
             letter-spacing: -2px;
@@ -541,19 +1007,52 @@
             overflow: hidden;
             text-overflow: ellipsis;
         }
-        body.fullscreen-mode .stop-name { font-size: 1.8vw; }
-        body.fullscreen-mode .stop-name-en { font-size: 1.4vw; }
 
-        body.fullscreen-mode .company-cell { width: 10vw; }
-        body.fullscreen-mode .company-logo  { max-height: 5vw; max-width: 10vw; }
-        body.fullscreen-mode .company-logo-ctb { max-height: 6vw; }
-        body.fullscreen-mode .company-logo-nlb { max-height: 7vw; }
+        body.fullscreen-mode .stop-name {
+            font-size: 1.8vw;
+        }
 
-        body.fullscreen-mode .eta-cell { width: 22vw; gap: 1.5vw; }
-        body.fullscreen-mode .eta-min  { font-size: 10vw; }
-        body.fullscreen-mode .eta-unit { font-size: 2vw; }
-        body.fullscreen-mode .eta-sec-min  { font-size: 3.5vw; }
-        body.fullscreen-mode .eta-sec-unit { font-size: 1.5vw; }
+        body.fullscreen-mode .stop-name-en {
+            font-size: 1.4vw;
+        }
+
+        body.fullscreen-mode .company-cell {
+            width: 10vw;
+        }
+
+        body.fullscreen-mode .company-logo {
+            max-height: 5vw;
+            max-width: 10vw;
+        }
+
+        body.fullscreen-mode .company-logo-ctb {
+            max-height: 6vw;
+        }
+
+        body.fullscreen-mode .company-logo-nlb {
+            max-height: 7vw;
+        }
+
+        body.fullscreen-mode .eta-cell {
+            width: 22vw;
+            gap: 1.5vw;
+        }
+
+        body.fullscreen-mode .eta-min {
+            font-size: 10vw;
+        }
+
+        body.fullscreen-mode .eta-unit {
+            font-size: 2vw;
+        }
+
+        body.fullscreen-mode .eta-sec-min {
+            font-size: 3.5vw;
+        }
+
+        body.fullscreen-mode .eta-sec-unit {
+            font-size: 1.5vw;
+        }
 
         /* Separator line in fullscreen */
         body.fullscreen-mode .bus-row::after {
@@ -563,15 +1062,21 @@
             left: 2vw;
             right: 2vw;
             height: 1px;
-            background: rgba(0,0,0,.06);
+            background: rgba(0, 0, 0, .06);
         }
-        body.dark-mode.fullscreen-mode .bus-row::after { background: rgba(255,255,255,.06); }
+
+        body.dark-mode.fullscreen-mode .bus-row::after {
+            background: rgba(255, 255, 255, .06);
+        }
 
         /* ── MODAL ── */
         .modal-backdrop {
             position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,.5);
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, .5);
             display: none;
             -webkit-box-align: center;
             -webkit-align-items: center;
@@ -581,7 +1086,13 @@
             justify-content: center;
             z-index: 500;
         }
-        .modal-backdrop.active { display: -webkit-box; display: -webkit-flex; display: flex; }
+
+        .modal-backdrop.active {
+            display: -webkit-box;
+            display: -webkit-flex;
+            display: flex;
+        }
+
         .modal {
             background: #fff;
             border-radius: 8px;
@@ -595,11 +1106,16 @@
             -webkit-box-direction: normal;
             -webkit-flex-direction: column;
             flex-direction: column;
-            -webkit-box-shadow: 0 8px 32px rgba(0,0,0,.3);
-            box-shadow: 0 8px 32px rgba(0,0,0,.3);
+            -webkit-box-shadow: 0 8px 32px rgba(0, 0, 0, .3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, .3);
             overflow: hidden;
         }
-        body.dark-mode .modal { background: #0d1b3e; color: #fff; }
+
+        body.dark-mode .modal {
+            background: #0d1b3e;
+            color: #fff;
+        }
+
         .modal-header {
             padding: 12px 16px;
             border-bottom: 1px solid #e0e0e0;
@@ -616,10 +1132,29 @@
             -webkit-flex-shrink: 0;
             flex-shrink: 0;
         }
-        body.dark-mode .modal-header { background: rgba(255,255,255,.05); border-bottom-color: rgba(255,255,255,.12); }
-        .modal-title { font-size: 16px; font-weight: 600; }
-        .modal-close { border: none; background: transparent; font-size: 20px; cursor: pointer; color: #757575; }
-        body.dark-mode .modal-close { color: rgba(255,255,255,.6); }
+
+        body.dark-mode .modal-header {
+            background: rgba(255, 255, 255, .05);
+            border-bottom-color: rgba(255, 255, 255, .12);
+        }
+
+        .modal-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            border: none;
+            background: transparent;
+            font-size: 20px;
+            cursor: pointer;
+            color: #757575;
+        }
+
+        body.dark-mode .modal-close {
+            color: rgba(255, 255, 255, .6);
+        }
+
         .modal-body {
             display: -webkit-box;
             display: -webkit-flex;
@@ -630,6 +1165,7 @@
             overflow: hidden;
             gap: 0;
         }
+
         .modal-left {
             width: 45%;
             -webkit-flex-shrink: 0;
@@ -647,7 +1183,11 @@
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
         }
-        body.dark-mode .modal-left { border-right-color: rgba(255,255,255,.1); }
+
+        body.dark-mode .modal-left {
+            border-right-color: rgba(255, 255, 255, .1);
+        }
+
         .modal-right {
             -webkit-box-flex: 1;
             -webkit-flex: 1;
@@ -662,8 +1202,17 @@
             padding: 12px;
             overflow: hidden;
         }
-        .modal-label { font-size: 12px; color: #616161; margin-bottom: 3px; }
-        body.dark-mode .modal-label { color: rgba(255,255,255,.55); }
+
+        .modal-label {
+            font-size: 12px;
+            color: #616161;
+            margin-bottom: 3px;
+        }
+
+        body.dark-mode .modal-label {
+            color: rgba(255, 255, 255, .55);
+        }
+
         .modal-route-input {
             padding: 6px 8px;
             border-radius: 5px;
@@ -672,7 +1221,13 @@
             font-family: inherit;
             width: 100%;
         }
-        body.dark-mode .modal-route-input { background: rgba(255,255,255,.08); color: #fff; border-color: rgba(255,255,255,.2); }
+
+        body.dark-mode .modal-route-input {
+            background: rgba(255, 255, 255, .08);
+            color: #fff;
+            border-color: rgba(255, 255, 255, .2);
+        }
+
         .route-select {
             width: 100%;
             border-radius: 5px;
@@ -681,47 +1236,166 @@
             font-family: inherit;
             min-height: 130px;
         }
-        body.dark-mode .route-select { background: rgba(255,255,255,.08); color: #fff; border-color: rgba(255,255,255,.2); }
-        body.dark-mode .route-select option { background: #0d1b3e; }
-        .co-selector { display: -webkit-box; display: -webkit-flex; display: flex; gap: 4px; -webkit-flex-wrap: wrap; flex-wrap: wrap; }
+
+        body.dark-mode .route-select {
+            background: rgba(255, 255, 255, .08);
+            color: #fff;
+            border-color: rgba(255, 255, 255, .2);
+        }
+
+        body.dark-mode .route-select option {
+            background: #0d1b3e;
+        }
+
+        .co-selector {
+            display: -webkit-box;
+            display: -webkit-flex;
+            display: flex;
+            gap: 4px;
+            -webkit-flex-wrap: wrap;
+            flex-wrap: wrap;
+        }
+
         .co-btn {
-            padding: 4px 10px; font-size: 11px; border-radius: 20px;
-            border: 1px solid #bdbdbd; background: #fafafa; cursor: pointer;
-            font-weight: 600; font-family: inherit;
+            padding: 4px 10px;
+            font-size: 11px;
+            border-radius: 20px;
+            border: 1px solid #bdbdbd;
+            background: #fafafa;
+            cursor: pointer;
+            font-weight: 600;
+            font-family: inherit;
         }
-        .co-btn.active { background: #1976d2; color: #fff; border-color: #1976d2; }
-        body.dark-mode .co-btn { background: rgba(255,255,255,.08); color: rgba(255,255,255,.8); border-color: rgba(255,255,255,.2); }
-        .dir-buttons { display: -webkit-box; display: -webkit-flex; display: flex; gap: 6px; }
+
+        .co-btn.active {
+            background: #1976d2;
+            color: #fff;
+            border-color: #1976d2;
+        }
+
+        body.dark-mode .co-btn {
+            background: rgba(255, 255, 255, .08);
+            color: rgba(255, 255, 255, .8);
+            border-color: rgba(255, 255, 255, .2);
+        }
+
+        .dir-buttons {
+            display: -webkit-box;
+            display: -webkit-flex;
+            display: flex;
+            gap: 6px;
+        }
+
         .dir-btn {
-            -webkit-box-flex: 1; -webkit-flex: 1; flex: 1;
-            padding: 5px; font-size: 12px; border-radius: 20px;
-            border: 1px solid #bdbdbd; background: #fafafa; cursor: pointer; font-family: inherit;
+            -webkit-box-flex: 1;
+            -webkit-flex: 1;
+            flex: 1;
+            padding: 5px;
+            font-size: 12px;
+            border-radius: 20px;
+            border: 1px solid #bdbdbd;
+            background: #fafafa;
+            cursor: pointer;
+            font-family: inherit;
         }
-        .dir-btn.active { background: #1976d2; color: #fff; border-color: #1976d2; }
-        body.dark-mode .dir-btn { background: rgba(255,255,255,.08); color: rgba(255,255,255,.8); border-color: rgba(255,255,255,.2); }
+
+        .dir-btn.active {
+            background: #1976d2;
+            color: #fff;
+            border-color: #1976d2;
+        }
+
+        body.dark-mode .dir-btn {
+            background: rgba(255, 255, 255, .08);
+            color: rgba(255, 255, 255, .8);
+            border-color: rgba(255, 255, 255, .2);
+        }
+
         .load-stops-btn {
-            padding: 6px; border-radius: 5px; border: none;
-            background: #1976d2; color: #fff; font-size: 13px;
-            cursor: pointer; font-family: inherit; width: 100%;
+            padding: 6px;
+            border-radius: 5px;
+            border: none;
+            background: #1976d2;
+            color: #fff;
+            font-size: 13px;
+            cursor: pointer;
+            font-family: inherit;
+            width: 100%;
         }
-        .load-stops-btn:disabled { opacity: .5; cursor: default; }
-        .modal-right-title { font-size: 12px; color: #616161; margin-bottom: 6px; }
-        body.dark-mode .modal-right-title { color: rgba(255,255,255,.55); }
+
+        .load-stops-btn:disabled {
+            opacity: .5;
+            cursor: default;
+        }
+
+        .modal-right-title {
+            font-size: 12px;
+            color: #616161;
+            margin-bottom: 6px;
+        }
+
+        body.dark-mode .modal-right-title {
+            color: rgba(255, 255, 255, .55);
+        }
+
         .stop-list {
-            -webkit-box-flex: 1; -webkit-flex: 1; flex: 1;
-            border-radius: 5px; border: 1px solid #e0e0e0;
-            overflow-y: auto; -webkit-overflow-scrolling: touch;
+            -webkit-box-flex: 1;
+            -webkit-flex: 1;
+            flex: 1;
+            border-radius: 5px;
+            border: 1px solid #e0e0e0;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
         }
-        body.dark-mode .stop-list { border-color: rgba(255,255,255,.12); background: rgba(255,255,255,.03); }
-        .stop-item { padding: 8px 10px; border-bottom: 1px solid #f5f5f5; cursor: pointer; }
-        .stop-item:active { background: #e3f2fd; }
-        body.dark-mode .stop-item { border-bottom-color: rgba(255,255,255,.06); }
-        body.dark-mode .stop-item:active { background: rgba(66,165,245,.15); }
-        .stop-item-name { font-size: 13px; color: #212121; }
-        body.dark-mode .stop-item-name { color: #fff; }
-        .stop-item-sub { font-size: 10px; color: #757575; margin-top: 1px; }
-        body.dark-mode .stop-item-sub { color: rgba(255,255,255,.5); }
-        .stop-list-empty { padding: 16px; font-size: 12px; color: #9e9e9e; }
+
+        body.dark-mode .stop-list {
+            border-color: rgba(255, 255, 255, .12);
+            background: rgba(255, 255, 255, .03);
+        }
+
+        .stop-item {
+            padding: 8px 10px;
+            border-bottom: 1px solid #f5f5f5;
+            cursor: pointer;
+        }
+
+        .stop-item:active {
+            background: #e3f2fd;
+        }
+
+        body.dark-mode .stop-item {
+            border-bottom-color: rgba(255, 255, 255, .06);
+        }
+
+        body.dark-mode .stop-item:active {
+            background: rgba(66, 165, 245, .15);
+        }
+
+        .stop-item-name {
+            font-size: 13px;
+            color: #212121;
+        }
+
+        body.dark-mode .stop-item-name {
+            color: #fff;
+        }
+
+        .stop-item-sub {
+            font-size: 10px;
+            color: #757575;
+            margin-top: 1px;
+        }
+
+        body.dark-mode .stop-item-sub {
+            color: rgba(255, 255, 255, .5);
+        }
+
+        .stop-list-empty {
+            padding: 16px;
+            font-size: 12px;
+            color: #9e9e9e;
+        }
+
         .modal-footer-bar {
             padding: 6px 12px;
             font-size: 11px;
@@ -731,1345 +1405,1352 @@
             -webkit-flex-shrink: 0;
             flex-shrink: 0;
         }
-        body.dark-mode .modal-footer-bar { background: rgba(255,255,255,.04); border-top-color: rgba(255,255,255,.08); }
+
+        body.dark-mode .modal-footer-bar {
+            background: rgba(255, 255, 255, .04);
+            border-top-color: rgba(255, 255, 255, .08);
+        }
     </style>
 </head>
+
 <body>
 
-<!-- Header -->
-<div class="header">
-    <div class="header-left">
-        <span class="header-icon">🚌</span>
+    <!-- Header -->
+    <div class="header">
+        <div class="header-left">
+            <span class="header-icon">🚌</span>
+            <div>
+                <div class="header-title-text">巴士到站時間預報</div>
+                <div class="header-subtitle">Bus ETA Display</div>
+            </div>
+        </div>
+        <div class="header-right">
+            <div class="current-time" id="currentTime">--:--:--</div>
+            <div class="current-date" id="currentDate">----年--月--日</div>
+            <div class="header-btns">
+                <button class="btn-sm" id="themeBtn" onclick="toggleTheme()">深色</button>
+                <button class="btn-sm" id="fsBtn" onclick="toggleFullscreen()">全螢幕</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+        <button class="btn-secondary-ctrl" onclick="openModal()">選擇路線 / 巴士站</button>
+        <button class="btn-secondary-ctrl btn-danger" id="clearBtn" style="display:none;"
+            onclick="clearAll()">清除全部</button>
+        <button class="btn-primary" onclick="doRefresh()">重新整理</button>
+    </div>
+
+    <!-- Status Bar -->
+    <div class="status-bar">
+        <div class="status-indicator">
+            <div class="status-dot" id="statusDot"></div>
+            <span id="statusText">等待查詢...</span>
+        </div>
         <div>
-            <div class="header-title-text">巴士到站時間預報</div>
-            <div class="header-subtitle">Bus ETA Display</div>
+            <span id="lastUpdate">--</span>
+            &nbsp;|&nbsp;每15秒更新&nbsp;|&nbsp;
+            <span id="recordCount">0 個站點</span>
         </div>
     </div>
-    <div class="header-right">
-        <div class="current-time" id="currentTime">--:--:--</div>
-        <div class="current-date" id="currentDate">----年--月--日</div>
-        <div class="header-btns">
-            <button class="btn-sm" id="themeBtn" onclick="toggleTheme()">深色</button>
-            <button class="btn-sm" id="fsBtn" onclick="toggleFullscreen()">全螢幕</button>
+
+    <!-- Table Header -->
+    <div class="table-header" id="tableHeader">
+        <div style="width:24px;flex-shrink:0;"></div>
+        <div class="th-route">路線</div>
+        <div class="th-stop">目的地 / 巴士站</div>
+        <div class="th-co">公司</div>
+        <div class="th-eta">預計到站</div>
+        <div style="width:36px;flex-shrink:0;"></div>
+    </div>
+
+    <!-- Bus Rows -->
+    <div class="bus-rows-container" id="busRowsContainer">
+        <div class="message-container">
+            <div class="icon">🔍</div>
+            <div class="text">請選擇路線及巴士站</div>
+            <div class="subtext">按上方「選擇路線 / 巴士站」按鈕開始</div>
         </div>
     </div>
-</div>
 
-<!-- Controls -->
-<div class="controls">
-    <button class="btn-secondary-ctrl" onclick="openModal()">選擇路線 / 巴士站</button>
-    <button class="btn-secondary-ctrl btn-danger" id="clearBtn" style="display:none;" onclick="clearAll()">清除全部</button>
-    <button class="btn-primary" onclick="doRefresh()">重新整理</button>
-</div>
-
-<!-- Status Bar -->
-<div class="status-bar">
-    <div class="status-indicator">
-        <div class="status-dot" id="statusDot"></div>
-        <span id="statusText">等待查詢...</span>
-    </div>
-    <div>
-        <span id="lastUpdate">--</span>
-        &nbsp;|&nbsp;每15秒更新&nbsp;|&nbsp;
-        <span id="recordCount">0 個站點</span>
-    </div>
-</div>
-
-<!-- Table Header -->
-<div class="table-header" id="tableHeader">
-    <div style="width:24px;flex-shrink:0;"></div>
-    <div class="th-route">路線</div>
-    <div class="th-stop">目的地 / 巴士站</div>
-    <div class="th-co">公司</div>
-    <div class="th-eta">預計到站</div>
-    <div style="width:36px;flex-shrink:0;"></div>
-</div>
-
-<!-- Bus Rows -->
-<div class="bus-rows-container" id="busRowsContainer">
-    <div class="message-container">
-        <div class="icon">🔍</div>
-        <div class="text">請選擇路線及巴士站</div>
-        <div class="subtext">按上方「選擇路線 / 巴士站」按鈕開始</div>
-    </div>
-</div>
-
-<!-- Modal -->
-<div class="modal-backdrop" id="modal">
-    <div class="modal">
-        <div class="modal-header">
-            <div class="modal-title">選擇路線及巴士站</div>
-            <button class="modal-close" onclick="closeModal()">✕</button>
-        </div>
-        <div class="modal-body">
-            <div class="modal-left">
-                <div class="modal-label">巴士公司</div>
-                <div class="co-selector">
-                    <button class="co-btn active" data-co="CTB" onclick="selectCo('CTB')">城巴</button>
-                    <button class="co-btn" data-co="KMB" onclick="selectCo('KMB')">九巴</button>
-                    <button class="co-btn" data-co="LWB" onclick="selectCo('LWB')">龍運</button>
-                    <button class="co-btn" data-co="NLB" onclick="selectCo('NLB')">嶼巴</button>
-                </div>
-                <div class="modal-label">路線篩選</div>
-                <input class="modal-route-input" id="routeFilter" placeholder="輸入路線號碼..." oninput="filterRoutes()">
-                <select class="route-select" id="routeSelect" size="6" onchange="onRouteChange()"></select>
-                <div class="modal-label" id="dirLabel">方向</div>
-                <div class="dir-buttons" id="dirButtons">
-                    <button class="dir-btn" id="dirIn" onclick="setDir('inbound')">往起點</button>
-                    <button class="dir-btn" id="dirOut" onclick="setDir('outbound')">往終點</button>
-                </div>
-                <button class="load-stops-btn" id="loadBtn" onclick="loadStops()">載入巴士站</button>
+    <!-- Modal -->
+    <div class="modal-backdrop" id="modal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">選擇路線及巴士站</div>
+                <button class="modal-close" onclick="closeModal()">✕</button>
             </div>
-            <div class="modal-right">
-                <div class="modal-right-title" id="modalTitle">請先選擇路線及方向</div>
-                <div class="stop-list" id="stopList">
-                    <div class="stop-list-empty">尚未載入巴士站。</div>
+            <div class="modal-body">
+                <div class="modal-left">
+                    <div class="modal-label">巴士公司</div>
+                    <div class="co-selector">
+                        <button class="co-btn active" data-co="CTB" onclick="selectCo('CTB')">城巴</button>
+                        <button class="co-btn" data-co="KMB" onclick="selectCo('KMB')">九巴</button>
+                        <button class="co-btn" data-co="LWB" onclick="selectCo('LWB')">龍運</button>
+                        <button class="co-btn" data-co="NLB" onclick="selectCo('NLB')">嶼巴</button>
+                    </div>
+                    <div class="modal-label">路線篩選</div>
+                    <input class="modal-route-input" id="routeFilter" placeholder="輸入路線號碼..." oninput="filterRoutes()">
+                    <select class="route-select" id="routeSelect" size="6" onchange="onRouteChange()"></select>
+                    <div class="modal-label" id="dirLabel">方向</div>
+                    <div class="dir-buttons" id="dirButtons">
+                        <button class="dir-btn" id="dirIn" onclick="setDir('inbound')">往起點</button>
+                        <button class="dir-btn" id="dirOut" onclick="setDir('outbound')">往終點</button>
+                    </div>
+                    <button class="load-stops-btn" id="loadBtn" onclick="loadStops()">載入巴士站</button>
+                </div>
+                <div class="modal-right">
+                    <div class="modal-right-title" id="modalTitle">請先選擇路線及方向</div>
+                    <div class="stop-list" id="stopList">
+                        <div class="stop-list-empty">尚未載入巴士站。</div>
+                    </div>
                 </div>
             </div>
+            <div class="modal-footer-bar">提示：點擊巴士站新增/移除。拖動 ⠿ 可重新排序。</div>
         </div>
-        <div class="modal-footer-bar">提示：點擊巴士站新增/移除。拖動 ⠿ 可重新排序。</div>
     </div>
-</div>
 
-<script>
-/* ================================================================
-   COMPATIBILITY LAYER — works on Android WebView ~Chrome 40+
-   No const/let, no arrow functions, no async/await, no template literals
-   ================================================================ */
+    <script>
+        /* ================================================================
+           COMPATIBILITY LAYER — works on Android WebView ~Chrome 40+
+           No const/let, no arrow functions, no async/await, no template literals
+           ================================================================ */
 
-/* Polyfill Promise if missing */
-if (typeof Promise === 'undefined') {
-    /* Basic promise shim for very old webviews */
-    window.Promise = function(executor) {
-        var self = this;
-        self._state = 'pending';
-        self._value = undefined;
-        self._callbacks = [];
-        function resolve(val) {
-            if (self._state !== 'pending') return;
-            self._state = 'fulfilled';
-            self._value = val;
-            for (var i = 0; i < self._callbacks.length; i++) {
-                self._callbacks[i].onFulfilled(val);
-            }
-        }
-        function reject(val) {
-            if (self._state !== 'pending') return;
-            self._state = 'rejected';
-            self._value = val;
-            for (var i = 0; i < self._callbacks.length; i++) {
-                self._callbacks[i].onRejected(val);
-            }
-        }
-        try { executor(resolve, reject); } catch(e) { reject(e); }
-    };
-    Promise.prototype.then = function(onFulfilled, onRejected) {
-        var self = this;
-        return new Promise(function(resolve, reject) {
-            function handle(fn, val, res, rej) {
-                try {
-                    if (typeof fn === 'function') res(fn(val));
-                    else res(val);
-                } catch(e) { rej(e); }
-            }
-            var cb = {
-                onFulfilled: function(val){ handle(onFulfilled,val,resolve,reject); },
-                onRejected:  function(val){ handle(onRejected, val,resolve,reject); }
-            };
-            if (self._state === 'fulfilled') cb.onFulfilled(self._value);
-            else if (self._state === 'rejected') cb.onRejected(self._value);
-            else self._callbacks.push(cb);
-        });
-    };
-    Promise.prototype.catch = function(fn){ return this.then(null, fn); };
-    Promise.resolve = function(v){ return new Promise(function(r){ r(v); }); };
-    Promise.reject  = function(v){ return new Promise(function(r,j){ j(v); }); };
-    Promise.all = function(arr) {
-        return new Promise(function(resolve, reject) {
-            var results = [], count = 0;
-            if (!arr.length) { resolve([]); return; }
-            for (var i = 0; i < arr.length; i++) {
-                (function(idx) {
-                    Promise.resolve(arr[idx]).then(function(val) {
-                        results[idx] = val;
-                        count++;
-                        if (count === arr.length) resolve(results);
-                    }, reject);
-                })(i);
-            }
-        });
-    };
-}
-
-/* fetch polyfill using XMLHttpRequest */
-if (typeof fetch === 'undefined') {
-    window.fetch = function(url) {
-        return new Promise(function(resolve, reject) {
-            var xhr = new XMLHttpRequest();
-            xhr.open('GET', url, true);
-            xhr.onload = function() {
-                var resp = {
-                    ok: xhr.status >= 200 && xhr.status < 300,
-                    status: xhr.status,
-                    json: function() {
-                        return new Promise(function(res, rej) {
-                            try { res(JSON.parse(xhr.responseText)); }
-                            catch(e) { rej(e); }
-                        });
+        /* Polyfill Promise if missing */
+        if (typeof Promise === 'undefined') {
+            /* Basic promise shim for very old webviews */
+            window.Promise = function (executor) {
+                var self = this;
+                self._state = 'pending';
+                self._value = undefined;
+                self._callbacks = [];
+                function resolve(val) {
+                    if (self._state !== 'pending') return;
+                    self._state = 'fulfilled';
+                    self._value = val;
+                    for (var i = 0; i < self._callbacks.length; i++) {
+                        self._callbacks[i].onFulfilled(val);
                     }
-                };
-                resolve(resp);
+                }
+                function reject(val) {
+                    if (self._state !== 'pending') return;
+                    self._state = 'rejected';
+                    self._value = val;
+                    for (var i = 0; i < self._callbacks.length; i++) {
+                        self._callbacks[i].onRejected(val);
+                    }
+                }
+                try { executor(resolve, reject); } catch (e) { reject(e); }
             };
-            xhr.onerror = function() { reject(new Error('Network error')); };
-            xhr.send();
-        });
-    };
-}
-
-/* ================================================================
-   CONSTANTS & STATE
-   ================================================================ */
-var JOINT_ROUTES = {
-    '101':1,'102':1,'104':1,'105':1,'106':1,'107':1,'108':1,'109':1,
-    '110':1,'111':1,'112':1,'113':1,'115':1,'116':1,'118':1,'N121':1,
-    '170':1,'171':1,'182':1,'182P':1,'N182':1,
-    '307':1,'307P':1,'N307':1,
-    '619':1,'680':1,'681':1,'682':1,'690':1
-};
-
-var LOGOS = {
-    CTB:  'https://www.citybus.com.hk/_common/images/logo.png',
-    KMB:  'https://upload.wikimedia.org/wikipedia/en/thumb/b/b4/KowloonMotorBus.svg/3840px-KowloonMotorBus.svg.png',
-    LWB:  'https://upload.wikimedia.org/wikipedia/en/thumb/f/f1/Long_Win_Bus_logo.svg/500px-Long_Win_Bus_logo.svg.png',
-    NLB:  'https://www.td.gov.hk/filemanager/en/content_391/nlb_logo-color-v.png',
-    MTR:  'https://upload.wikimedia.org/wikipedia/en/thumb/b/b9/HK_MTR_logo.svg/960px-HK_MTR_logo.svg.png',
-    NWFB: 'https://www.citybus.com.hk/_common/images/logo.png'
-};
-var logoCache = {};
-
-var API = {
-    CTB_ROUTE_LIST: 'https://rt.data.gov.hk/v2/transport/citybus/route/CTB',
-    CTB_ROUTE_STOP: function(r,d){ return 'https://rt.data.gov.hk/v2/transport/citybus/route-stop/CTB/'+r+'/'+d; },
-    CTB_STOP:       function(id){ return 'https://rt.data.gov.hk/v2/transport/citybus/stop/'+id; },
-    CTB_ETA:        function(s,r){ return 'https://rt.data.gov.hk/v2/transport/citybus/eta/CTB/'+s+'/'+r; },
-    KMB_ROUTE_LIST: 'https://data.etabus.gov.hk/v1/transport/kmb/route/',
-    KMB_ROUTE_STOP: function(r,d,st){ return 'https://data.etabus.gov.hk/v1/transport/kmb/route-stop/'+r+'/'+d+'/'+(st||1); },
-    KMB_STOP:       function(id){ return 'https://data.etabus.gov.hk/v1/transport/kmb/stop/'+id; },
-    KMB_ETA:        function(s,r,st){ return 'https://data.etabus.gov.hk/v1/transport/kmb/eta/'+s+'/'+r+'/'+(st||1); },
-    NLB_ROUTE_LIST: 'https://rt.data.gov.hk/v1/transport/nlb/route.php?action=list',
-    NLB_ROUTE_STOP: function(rid){ return 'https://rt.data.gov.hk/v2/transport/nlb/stop.php?action=list&routeId='+rid; },
-    NLB_ETA:        function(s,rid){ return 'https://rt.data.gov.hk/v2/transport/nlb/stop.php?action=estimatedArrivals&routeId='+rid+'&stopId='+s+'&language=zh'; }
-};
-
-var STORAGE_KEY = 'busEtaStops_v2';
-var REFRESH_MS  = 15000;
-
-var state = {
-    stops: [],          // current configured stops
-    theme: 'light',
-    fullscreen: false,
-    refreshTimer: null,
-    isFirstRender: true,
-    renderedRows: {},   // stopKey -> { el, etaSig }
-    stopNameCache: {},  // co_id -> {name_tc, name_en}
-    routeListCache: {}, // co -> array
-    selectedCo: 'CTB',
-    selectedDir: null,
-    kmbRaw: null,
-    kmbFull: null,
-    isDragging: false,
-    dragState: null
-};
-
-/* ================================================================
-   UTILITY
-   ================================================================ */
-function $(id){ return document.getElementById(id); }
-function el(tag){ return document.createElement(tag); }
-function qs(sel){ return document.querySelector(sel); }
-function qsa(sel){ return document.querySelectorAll(sel); }
-
-function apiFetch(url) {
-    return fetch(url).then(function(r){
-        if (!r.ok) throw new Error('HTTP ' + r.status);
-        return r.json();
-    });
-}
-
-function isLwb(route) {
-    var r = route.toUpperCase();
-    var prefixes = ['A','B','E','R','S'];
-    for (var i = 0; i < prefixes.length; i++) {
-        if (r.charAt(0) === prefixes[i] && /^[A-Z]\d/.test(r)) return true;
-    }
-    return false;
-}
-
-function isJoint(route) {
-    return !!JOINT_ROUTES[route.toUpperCase()];
-}
-
-function makeStopKey(sd) {
-    var dir = sd.company === 'NLB' ? 'nlb' : (sd.direction || 'none');
-    var rid = sd.company === 'NLB' ? (sd.nlbRouteId || sd.routeId) : sd.routeId;
-    return sd.company + '||' + rid + '||' + sd.stopId + '||' + dir;
-}
-
-function getCoName(c) {
-    var m = {CTB:'城巴',NWFB:'城巴',KMB:'九巴',LWB:'龍運',NLB:'嶼巴',MTR:'港鐵'};
-    return m[c] || c;
-}
-
-function getCoClass(c) {
-    var m = {CTB:'ctb',NWFB:'ctb',KMB:'kmb',LWB:'lwb',NLB:'nlb',MTR:'mtr'};
-    return m[c] || 'ctb';
-}
-
-function getRouteColorClass(rn, co) {
-    var r = rn.toUpperCase();
-    var c = (co || '').toUpperCase();
-    if (c === 'LWB' || (c === 'KMB' && isLwb(r))) return 'color-lwb';
-    if (r.charAt(0) === 'N') return 'color-night';
-    if (r.charAt(r.length-1) === 'X' && !isLwb(r)) return 'color-express';
-    if (r.charAt(0) === 'R' && !isLwb(r)) return 'color-special';
-    var cm = {CTB:'color-ctb',NWFB:'color-ctb',KMB:'color-kmb',NLB:'color-nlb',MTR:'color-mtr'};
-    return cm[c] || 'color-ctb';
-}
-
-function getAccentClass(rn, co, joint) {
-    if (joint) return 'accent-joint';
-    var r = rn.toUpperCase();
-    var c = (co || '').toUpperCase();
-    if (c === 'LWB' || (c === 'KMB' && isLwb(r))) return 'accent-lwb';
-    if (r.charAt(0) === 'N') return 'accent-night';
-    if (r.charAt(r.length-1) === 'X' && !isLwb(r)) return 'accent-express';
-    if (r.charAt(0) === 'R' && !isLwb(r)) return 'accent-special';
-    var cm = {CTB:'accent-ctb',NWFB:'accent-ctb',KMB:'accent-kmb',NLB:'accent-nlb',MTR:'accent-mtr'};
-    return cm[c] || 'accent-ctb';
-}
-
-/* ================================================================
-   CLOCK
-   ================================================================ */
-function updateClock() {
-    var now = new Date();
-    var h = now.getHours(), m = now.getMinutes(), s = now.getSeconds();
-    var pad = function(n){ return n < 10 ? '0' + n : '' + n; };
-    $('currentTime').textContent = pad(h) + ':' + pad(m) + ':' + pad(s);
-    var days = ['星期日','星期一','星期二','星期三','星期四','星期五','星期六'];
-    $('currentDate').textContent = now.getFullYear() + '年' + (now.getMonth()+1) + '月' + now.getDate() + '日 ' + days[now.getDay()];
-}
-setInterval(updateClock, 1000);
-updateClock();
-
-/* ================================================================
-   THEME
-   ================================================================ */
-function applyTheme(t) {
-    state.theme = t;
-    if (t === 'dark') {
-        document.body.classList.add('dark-mode');
-        $('themeBtn').textContent = '淺色';
-    } else {
-        document.body.classList.remove('dark-mode');
-        $('themeBtn').textContent = '深色';
-    }
-}
-function toggleTheme() {
-    var next = state.theme === 'dark' ? 'light' : 'dark';
-    applyTheme(next);
-    try { localStorage.setItem('busEtaTheme', next); } catch(e) {}
-}
-function loadTheme() {
-    var saved;
-    try { saved = localStorage.getItem('busEtaTheme'); } catch(e) {}
-    if (saved === 'dark' || saved === 'light') { applyTheme(saved); return; }
-    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) applyTheme('dark');
-}
-
-/* ================================================================
-   FULLSCREEN
-   ================================================================ */
-function toggleFullscreen() {
-    state.fullscreen = !state.fullscreen;
-    document.body.classList.toggle('fullscreen-mode', state.fullscreen);
-    $('fsBtn').textContent = state.fullscreen ? '退出全螢幕' : '全螢幕';
-    $('tableHeader').style.display = state.fullscreen ? 'none' : '';
-    setContainerHeight();
-}
-function setContainerHeight() {
-    var c = $('busRowsContainer');
-    if (state.fullscreen) {
-        c.style.height = '100vh';
-        c.style.maxHeight = '';
-    } else {
-        c.style.height = '';
-        var used = 0;
-        var els = ['header','controls-bar','status-bar','tableHeader'];
-        var elDoms = [qs('.header'), qs('.controls'), qs('.status-bar'), $('tableHeader')];
-        for (var i = 0; i < elDoms.length; i++) {
-            if (elDoms[i] && elDoms[i].offsetHeight) used += elDoms[i].offsetHeight;
+            Promise.prototype.then = function (onFulfilled, onRejected) {
+                var self = this;
+                return new Promise(function (resolve, reject) {
+                    function handle(fn, val, res, rej) {
+                        try {
+                            if (typeof fn === 'function') res(fn(val));
+                            else res(val);
+                        } catch (e) { rej(e); }
+                    }
+                    var cb = {
+                        onFulfilled: function (val) { handle(onFulfilled, val, resolve, reject); },
+                        onRejected: function (val) { handle(onRejected, val, resolve, reject); }
+                    };
+                    if (self._state === 'fulfilled') cb.onFulfilled(self._value);
+                    else if (self._state === 'rejected') cb.onRejected(self._value);
+                    else self._callbacks.push(cb);
+                });
+            };
+            Promise.prototype.catch = function (fn) { return this.then(null, fn); };
+            Promise.resolve = function (v) { return new Promise(function (r) { r(v); }); };
+            Promise.reject = function (v) { return new Promise(function (r, j) { j(v); }); };
+            Promise.all = function (arr) {
+                return new Promise(function (resolve, reject) {
+                    var results = [], count = 0;
+                    if (!arr.length) { resolve([]); return; }
+                    for (var i = 0; i < arr.length; i++) {
+                        (function (idx) {
+                            Promise.resolve(arr[idx]).then(function (val) {
+                                results[idx] = val;
+                                count++;
+                                if (count === arr.length) resolve(results);
+                            }, reject);
+                        })(i);
+                    }
+                });
+            };
         }
-        c.style.maxHeight = (window.innerHeight - used - 4) + 'px';
-    }
-}
 
-/* ================================================================
-   STATUS
-   ================================================================ */
-function setStatus(state_name, text) {
-    var dot = $('statusDot');
-    dot.className = 'status-dot';
-    if (state_name === 'loading') dot.classList.add('loading');
-    if (state_name === 'error')   dot.classList.add('error');
-    $('statusText').textContent = text;
-}
+        /* fetch polyfill using XMLHttpRequest */
+        if (typeof fetch === 'undefined') {
+            window.fetch = function (url) {
+                return new Promise(function (resolve, reject) {
+                    var xhr = new XMLHttpRequest();
+                    xhr.open('GET', url, true);
+                    xhr.onload = function () {
+                        var resp = {
+                            ok: xhr.status >= 200 && xhr.status < 300,
+                            status: xhr.status,
+                            json: function () {
+                                return new Promise(function (res, rej) {
+                                    try { res(JSON.parse(xhr.responseText)); }
+                                    catch (e) { rej(e); }
+                                });
+                            }
+                        };
+                        resolve(resp);
+                    };
+                    xhr.onerror = function () { reject(new Error('Network error')); };
+                    xhr.send();
+                });
+            };
+        }
 
-/* ================================================================
-   STORAGE
-   ================================================================ */
-function saveStops() {
-    try {
-        var data = [];
-        for (var i = 0; i < state.stops.length; i++) {
-            var s = state.stops[i];
-            data.push({
-                stopId: s.stopId, routeId: s.routeId, nlbRouteId: s.nlbRouteId,
-                direction: s.direction, company: s.company, serviceType: s.serviceType,
-                nlbDest: s.nlbDest || '', stopInfoCache: s.stopInfo, altStopName: s.altStopName || null
+        /* ================================================================
+           CONSTANTS & STATE
+           ================================================================ */
+        var JOINT_ROUTES = {
+            '101': 1, '102': 1, '104': 1, '105': 1, '106': 1, '107': 1, '108': 1, '109': 1,
+            '110': 1, '111': 1, '112': 1, '113': 1, '115': 1, '116': 1, '118': 1, 'N121': 1,
+            '170': 1, '171': 1, '182': 1, '182P': 1, 'N182': 1,
+            '307': 1, '307P': 1, 'N307': 1,
+            '619': 1, '680': 1, '681': 1, '682': 1, '690': 1
+        };
+
+        var LOGOS = {
+            CTB: 'https://www.citybus.com.hk/_common/images/logo.png',
+            KMB: 'https://upload.wikimedia.org/wikipedia/en/thumb/b/b4/KowloonMotorBus.svg/3840px-KowloonMotorBus.svg.png',
+            LWB: 'https://upload.wikimedia.org/wikipedia/en/thumb/f/f1/Long_Win_Bus_logo.svg/500px-Long_Win_Bus_logo.svg.png',
+            NLB: 'https://www.td.gov.hk/filemanager/en/content_391/nlb_logo-color-v.png',
+            MTR: 'https://upload.wikimedia.org/wikipedia/en/thumb/b/b9/HK_MTR_logo.svg/960px-HK_MTR_logo.svg.png',
+            NWFB: 'https://www.citybus.com.hk/_common/images/logo.png'
+        };
+        var logoCache = {};
+
+        var API = {
+            CTB_ROUTE_LIST: 'https://rt.data.gov.hk/v2/transport/citybus/route/CTB',
+            CTB_ROUTE_STOP: function (r, d) { return 'https://rt.data.gov.hk/v2/transport/citybus/route-stop/CTB/' + r + '/' + d; },
+            CTB_STOP: function (id) { return 'https://rt.data.gov.hk/v2/transport/citybus/stop/' + id; },
+            CTB_ETA: function (s, r) { return 'https://rt.data.gov.hk/v2/transport/citybus/eta/CTB/' + s + '/' + r; },
+            KMB_ROUTE_LIST: 'https://data.etabus.gov.hk/v1/transport/kmb/route/',
+            KMB_ROUTE_STOP: function (r, d, st) { return 'https://data.etabus.gov.hk/v1/transport/kmb/route-stop/' + r + '/' + d + '/' + (st || 1); },
+            KMB_STOP: function (id) { return 'https://data.etabus.gov.hk/v1/transport/kmb/stop/' + id; },
+            KMB_ETA: function (s, r, st) { return 'https://data.etabus.gov.hk/v1/transport/kmb/eta/' + s + '/' + r + '/' + (st || 1); },
+            NLB_ROUTE_LIST: 'https://rt.data.gov.hk/v1/transport/nlb/route.php?action=list',
+            NLB_ROUTE_STOP: function (rid) { return 'https://rt.data.gov.hk/v2/transport/nlb/stop.php?action=list&routeId=' + rid; },
+            NLB_ETA: function (s, rid) { return 'https://rt.data.gov.hk/v2/transport/nlb/stop.php?action=estimatedArrivals&routeId=' + rid + '&stopId=' + s + '&language=zh'; }
+        };
+
+        var STORAGE_KEY = 'busEtaStops_v2';
+        var REFRESH_MS = 15000;
+
+        var state = {
+            stops: [],          // current configured stops
+            theme: 'light',
+            fullscreen: false,
+            refreshTimer: null,
+            isFirstRender: true,
+            renderedRows: {},   // stopKey -> { el, etaSig }
+            stopNameCache: {},  // co_id -> {name_tc, name_en}
+            routeListCache: {}, // co -> array
+            selectedCo: 'CTB',
+            selectedDir: null,
+            kmbRaw: null,
+            kmbFull: null,
+            isDragging: false,
+            dragState: null
+        };
+
+        /* ================================================================
+           UTILITY
+           ================================================================ */
+        function $(id) { return document.getElementById(id); }
+        function el(tag) { return document.createElement(tag); }
+        function qs(sel) { return document.querySelector(sel); }
+        function qsa(sel) { return document.querySelectorAll(sel); }
+
+        function apiFetch(url) {
+            return fetch(url).then(function (r) {
+                if (!r.ok) throw new Error('HTTP ' + r.status);
+                return r.json();
             });
         }
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-    } catch(e) {}
-}
 
-function loadStopsStorage() {
-    try {
-        var raw = localStorage.getItem(STORAGE_KEY);
-        if (!raw) return false;
-        var data = JSON.parse(raw);
-        if (!Array.isArray(data) || !data.length) return false;
-        state.stops = [];
-        for (var i = 0; i < data.length; i++) {
-            var s = data[i];
-            state.stops.push({
-                stopId: s.stopId, routeId: s.routeId, nlbRouteId: s.nlbRouteId || null,
-                direction: s.direction || null, company: s.company, serviceType: s.serviceType || 1,
-                nlbDest: s.nlbDest || '', stopInfo: s.stopInfoCache || null, altStopName: s.altStopName || null
+        function isLwb(route) {
+            var r = route.toUpperCase();
+            var prefixes = ['A', 'B', 'E', 'R', 'S'];
+            for (var i = 0; i < prefixes.length; i++) {
+                if (r.charAt(0) === prefixes[i] && /^[A-Z]\d/.test(r)) return true;
+            }
+            return false;
+        }
+
+        function isJoint(route) {
+            return !!JOINT_ROUTES[route.toUpperCase()];
+        }
+
+        function makeStopKey(sd) {
+            var dir = sd.company === 'NLB' ? 'nlb' : (sd.direction || 'none');
+            var rid = sd.company === 'NLB' ? (sd.nlbRouteId || sd.routeId) : sd.routeId;
+            return sd.company + '||' + rid + '||' + sd.stopId + '||' + dir;
+        }
+
+        function getCoName(c) {
+            var m = { CTB: '城巴', NWFB: '城巴', KMB: '九巴', LWB: '龍運', NLB: '嶼巴', MTR: '港鐵' };
+            return m[c] || c;
+        }
+
+        function getCoClass(c) {
+            var m = { CTB: 'ctb', NWFB: 'ctb', KMB: 'kmb', LWB: 'lwb', NLB: 'nlb', MTR: 'mtr' };
+            return m[c] || 'ctb';
+        }
+
+        function getRouteColorClass(rn, co) {
+            var r = rn.toUpperCase();
+            var c = (co || '').toUpperCase();
+            if (c === 'LWB' || (c === 'KMB' && isLwb(r))) return 'color-lwb';
+            if (r.charAt(0) === 'N') return 'color-night';
+            if (r.charAt(r.length - 1) === 'X' && !isLwb(r)) return 'color-express';
+            if (r.charAt(0) === 'R' && !isLwb(r)) return 'color-special';
+            var cm = { CTB: 'color-ctb', NWFB: 'color-ctb', KMB: 'color-kmb', NLB: 'color-nlb', MTR: 'color-mtr' };
+            return cm[c] || 'color-ctb';
+        }
+
+        function getAccentClass(rn, co, joint) {
+            if (joint) return 'accent-joint';
+            var r = rn.toUpperCase();
+            var c = (co || '').toUpperCase();
+            if (c === 'LWB' || (c === 'KMB' && isLwb(r))) return 'accent-lwb';
+            if (r.charAt(0) === 'N') return 'accent-night';
+            if (r.charAt(r.length - 1) === 'X' && !isLwb(r)) return 'accent-express';
+            if (r.charAt(0) === 'R' && !isLwb(r)) return 'accent-special';
+            var cm = { CTB: 'accent-ctb', NWFB: 'accent-ctb', KMB: 'accent-kmb', NLB: 'accent-nlb', MTR: 'accent-mtr' };
+            return cm[c] || 'accent-ctb';
+        }
+
+        /* ================================================================
+           CLOCK
+           ================================================================ */
+        function updateClock() {
+            var now = new Date();
+            var h = now.getHours(), m = now.getMinutes(), s = now.getSeconds();
+            var pad = function (n) { return n < 10 ? '0' + n : '' + n; };
+            $('currentTime').textContent = pad(h) + ':' + pad(m) + ':' + pad(s);
+            var days = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+            $('currentDate').textContent = now.getFullYear() + '年' + (now.getMonth() + 1) + '月' + now.getDate() + '日 ' + days[now.getDay()];
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        /* ================================================================
+           THEME
+           ================================================================ */
+        function applyTheme(t) {
+            state.theme = t;
+            if (t === 'dark') {
+                document.body.classList.add('dark-mode');
+                $('themeBtn').textContent = '淺色';
+            } else {
+                document.body.classList.remove('dark-mode');
+                $('themeBtn').textContent = '深色';
+            }
+        }
+        function toggleTheme() {
+            var next = state.theme === 'dark' ? 'light' : 'dark';
+            applyTheme(next);
+            try { localStorage.setItem('busEtaTheme', next); } catch (e) { }
+        }
+        function loadTheme() {
+            var saved;
+            try { saved = localStorage.getItem('busEtaTheme'); } catch (e) { }
+            if (saved === 'dark' || saved === 'light') { applyTheme(saved); return; }
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) applyTheme('dark');
+        }
+
+        /* ================================================================
+           FULLSCREEN
+           ================================================================ */
+        function toggleFullscreen() {
+            state.fullscreen = !state.fullscreen;
+            document.body.classList.toggle('fullscreen-mode', state.fullscreen);
+            $('fsBtn').textContent = state.fullscreen ? '退出全螢幕' : '全螢幕';
+            $('tableHeader').style.display = state.fullscreen ? 'none' : '';
+            setContainerHeight();
+        }
+        function setContainerHeight() {
+            var c = $('busRowsContainer');
+            if (state.fullscreen) {
+                c.style.height = '100vh';
+                c.style.maxHeight = '';
+            } else {
+                c.style.height = '';
+                var used = 0;
+                var els = ['header', 'controls-bar', 'status-bar', 'tableHeader'];
+                var elDoms = [qs('.header'), qs('.controls'), qs('.status-bar'), $('tableHeader')];
+                for (var i = 0; i < elDoms.length; i++) {
+                    if (elDoms[i] && elDoms[i].offsetHeight) used += elDoms[i].offsetHeight;
+                }
+                c.style.maxHeight = (window.innerHeight - used - 4) + 'px';
+            }
+        }
+
+        /* ================================================================
+           STATUS
+           ================================================================ */
+        function setStatus(state_name, text) {
+            var dot = $('statusDot');
+            dot.className = 'status-dot';
+            if (state_name === 'loading') dot.classList.add('loading');
+            if (state_name === 'error') dot.classList.add('error');
+            $('statusText').textContent = text;
+        }
+
+        /* ================================================================
+           STORAGE
+           ================================================================ */
+        function saveStops() {
+            try {
+                var data = [];
+                for (var i = 0; i < state.stops.length; i++) {
+                    var s = state.stops[i];
+                    data.push({
+                        stopId: s.stopId, routeId: s.routeId, nlbRouteId: s.nlbRouteId,
+                        direction: s.direction, company: s.company, serviceType: s.serviceType,
+                        nlbDest: s.nlbDest || '', stopInfoCache: s.stopInfo, altStopName: s.altStopName || null
+                    });
+                }
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+            } catch (e) { }
+        }
+
+        function loadStopsStorage() {
+            try {
+                var raw = localStorage.getItem(STORAGE_KEY);
+                if (!raw) return false;
+                var data = JSON.parse(raw);
+                if (!Array.isArray(data) || !data.length) return false;
+                state.stops = [];
+                for (var i = 0; i < data.length; i++) {
+                    var s = data[i];
+                    state.stops.push({
+                        stopId: s.stopId, routeId: s.routeId, nlbRouteId: s.nlbRouteId || null,
+                        direction: s.direction || null, company: s.company, serviceType: s.serviceType || 1,
+                        nlbDest: s.nlbDest || '', stopInfo: s.stopInfoCache || null, altStopName: s.altStopName || null
+                    });
+                }
+                updateClearBtn();
+                return true;
+            } catch (e) { return false; }
+        }
+
+        /* ================================================================
+           STOP NAME FETCH
+           ================================================================ */
+        function fetchStopNameFromCo(id, co) {
+            var key = co + '_' + id;
+            if (state.stopNameCache[key]) return Promise.resolve(state.stopNameCache[key]);
+            var url = (co === 'KMB' || co === 'LWB') ? API.KMB_STOP(id) : API.CTB_STOP(id);
+            return apiFetch(url).then(function (d) {
+                if (d.data && d.data.name_tc) {
+                    var info = { name_tc: d.data.name_tc, name_en: d.data.name_en || '' };
+                    state.stopNameCache[key] = info;
+                    return info;
+                }
+                return null;
+            }).catch(function () { return null; });
+        }
+
+        function fetchStopNames(id, primaryCo, joint) {
+            if (primaryCo === 'NLB') return Promise.resolve({ primary: { name_tc: id, name_en: '' }, alt: null });
+            return fetchStopNameFromCo(id, primaryCo).then(function (primary) {
+                primary = primary || { name_tc: id, name_en: '' };
+                if (!joint) return { primary: primary, alt: null };
+                var otherCo = (primaryCo === 'CTB' || primaryCo === 'NWFB') ? 'KMB' : 'CTB';
+                return fetchStopNameFromCo(id, otherCo).then(function (other) {
+                    if (other && other.name_tc && other.name_tc !== primary.name_tc) {
+                        return { primary: primary, alt: { name_tc: other.name_tc, name_en: other.name_en, co: otherCo } };
+                    }
+                    return { primary: primary, alt: null };
+                });
             });
         }
-        updateClearBtn();
-        return true;
-    } catch(e) { return false; }
-}
 
-/* ================================================================
-   STOP NAME FETCH
-   ================================================================ */
-function fetchStopNameFromCo(id, co) {
-    var key = co + '_' + id;
-    if (state.stopNameCache[key]) return Promise.resolve(state.stopNameCache[key]);
-    var url = (co === 'KMB' || co === 'LWB') ? API.KMB_STOP(id) : API.CTB_STOP(id);
-    return apiFetch(url).then(function(d) {
-        if (d.data && d.data.name_tc) {
-            var info = { name_tc: d.data.name_tc, name_en: d.data.name_en || '' };
-            state.stopNameCache[key] = info;
-            return info;
+        function fetchStopName(id, company) {
+            if ((company || '').toUpperCase() === 'NLB') return Promise.resolve({ name_tc: id, name_en: '' });
+            return fetchStopNameFromCo(id, company || 'CTB').then(function (r) { return r || { name_tc: id, name_en: '' }; });
         }
-        return null;
-    }).catch(function(){ return null; });
-}
 
-function fetchStopNames(id, primaryCo, joint) {
-    if (primaryCo === 'NLB') return Promise.resolve({ primary: { name_tc: id, name_en: '' }, alt: null });
-    return fetchStopNameFromCo(id, primaryCo).then(function(primary) {
-        primary = primary || { name_tc: id, name_en: '' };
-        if (!joint) return { primary: primary, alt: null };
-        var otherCo = (primaryCo === 'CTB' || primaryCo === 'NWFB') ? 'KMB' : 'CTB';
-        return fetchStopNameFromCo(id, otherCo).then(function(other) {
-            if (other && other.name_tc && other.name_tc !== primary.name_tc) {
-                return { primary: primary, alt: { name_tc: other.name_tc, name_en: other.name_en, co: otherCo } };
-            }
-            return { primary: primary, alt: null };
-        });
-    });
-}
-
-function fetchStopName(id, company) {
-    if ((company || '').toUpperCase() === 'NLB') return Promise.resolve({ name_tc: id, name_en: '' });
-    return fetchStopNameFromCo(id, company || 'CTB').then(function(r){ return r || { name_tc: id, name_en: '' }; });
-}
-
-/* ================================================================
-   LOGO HELPERS
-   ================================================================ */
-function testLogo(url) {
-    if (url in logoCache) return Promise.resolve(logoCache[url]);
-    return new Promise(function(resolve) {
-        var img = new Image();
-        img.onload  = function() { logoCache[url] = true;  resolve(true); };
-        img.onerror = function() { logoCache[url] = false; resolve(false); };
-        img.src = url;
-    });
-}
-/* Pre-warm */
-(function() {
-    for (var co in LOGOS) testLogo(LOGOS[co]);
-})();
-
-function buildLogoEl(co, inGroup) {
-    return testLogo(LOGOS[co] || '').then(function(ok) {
-        if (ok) {
-            var img = el('img');
-            img.src = LOGOS[co];
-            img.alt = getCoName(co);
-            var cls = 'company-logo';
-            if (co === 'CTB' || co === 'NWFB') cls += ' company-logo-ctb';
-            else if (co === 'NLB') cls += ' company-logo-nlb';
-            if (inGroup) {
-                /* smaller for joint group */
-                cls = cls.replace('company-logo-ctb','');
-                img.style.maxHeight = '30px';
-                img.style.maxWidth  = '70px';
-            }
-            img.className = cls;
-            img.onerror = function() {
-                var span = el('span');
-                span.className = 'company-tag-sm tag-' + getCoClass(co);
-                span.textContent = getCoName(co);
-                img.parentNode && img.parentNode.replaceChild(span, img);
-            };
-            return img;
-        } else {
-            var span = el('span');
-            span.className = 'company-tag-sm tag-' + getCoClass(co);
-            span.textContent = getCoName(co);
-            return span;
+        /* ================================================================
+           LOGO HELPERS
+           ================================================================ */
+        function testLogo(url) {
+            if (url in logoCache) return Promise.resolve(logoCache[url]);
+            return new Promise(function (resolve) {
+                var img = new Image();
+                img.onload = function () { logoCache[url] = true; resolve(true); };
+                img.onerror = function () { logoCache[url] = false; resolve(false); };
+                img.src = url;
+            });
         }
-    });
-}
+        /* Pre-warm */
+        (function () {
+            for (var co in LOGOS) testLogo(LOGOS[co]);
+        })();
 
-function buildCompanyCell(co, joint) {
-    var div = el('div');
-    div.className = 'company-cell';
-    if (joint) {
-        var grp = el('div');
-        grp.className = 'co-badge-group';
-        div.appendChild(grp);
-        return buildLogoEl('CTB', true).then(function(ctbEl) {
-            grp.appendChild(ctbEl);
-            return buildLogoEl('KMB', true).then(function(kmbEl) {
-                grp.appendChild(kmbEl);
+        function buildLogoEl(co, inGroup) {
+            return testLogo(LOGOS[co] || '').then(function (ok) {
+                if (ok) {
+                    var img = el('img');
+                    img.src = LOGOS[co];
+                    img.alt = getCoName(co);
+                    var cls = 'company-logo';
+                    if (co === 'CTB' || co === 'NWFB') cls += ' company-logo-ctb';
+                    else if (co === 'NLB') cls += ' company-logo-nlb';
+                    if (inGroup) {
+                        /* smaller for joint group */
+                        cls = cls.replace('company-logo-ctb', '');
+                        img.style.maxHeight = '30px';
+                        img.style.maxWidth = '70px';
+                    }
+                    img.className = cls;
+                    img.onerror = function () {
+                        var span = el('span');
+                        span.className = 'company-tag-sm tag-' + getCoClass(co);
+                        span.textContent = getCoName(co);
+                        img.parentNode && img.parentNode.replaceChild(span, img);
+                    };
+                    return img;
+                } else {
+                    var span = el('span');
+                    span.className = 'company-tag-sm tag-' + getCoClass(co);
+                    span.textContent = getCoName(co);
+                    return span;
+                }
+            });
+        }
+
+        function buildCompanyCell(co, joint) {
+            var div = el('div');
+            div.className = 'company-cell';
+            if (joint) {
+                var grp = el('div');
+                grp.className = 'co-badge-group';
+                div.appendChild(grp);
+                return buildLogoEl('CTB', true).then(function (ctbEl) {
+                    grp.appendChild(ctbEl);
+                    return buildLogoEl('KMB', true).then(function (kmbEl) {
+                        grp.appendChild(kmbEl);
+                        return div;
+                    });
+                });
+            }
+            return buildLogoEl(co, false).then(function (logoEl) {
+                div.appendChild(logoEl);
                 return div;
             });
-        });
-    }
-    return buildLogoEl(co, false).then(function(logoEl) {
-        div.appendChild(logoEl);
-        return div;
-    });
-}
+        }
 
-/* ================================================================
-   ETA HELPERS
-   ================================================================ */
-function getEtaInfo(item) {
-    var diff = Math.floor((new Date(item.eta) - Date.now()) / 60000);
-    var cls, txt;
-    if (diff <= 0)       { cls = 'eta-arriving'; txt = '到站'; }
-    else if (diff <= 3)  { cls = 'eta-arriving'; txt = '' + diff; }
-    else if (diff <= 10) { cls = 'eta-soon';     txt = '' + diff; }
-    else                 { cls = 'eta-normal';   txt = '' + diff; }
-    return { cls: cls, txt: txt, diff: diff, rmk: item.rmk_tc || '' };
-}
+        /* ================================================================
+           ETA HELPERS
+           ================================================================ */
+        function getEtaInfo(item) {
+            var diff = Math.floor((new Date(item.eta) - Date.now()) / 60000);
+            var cls, txt;
+            if (diff <= 0) { cls = 'eta-arriving'; txt = '到站'; }
+            else if (diff <= 3) { cls = 'eta-arriving'; txt = '' + diff; }
+            else if (diff <= 10) { cls = 'eta-soon'; txt = '' + diff; }
+            else { cls = 'eta-normal'; txt = '' + diff; }
+            return { cls: cls, txt: txt, diff: diff, rmk: item.rmk_tc || '' };
+        }
 
-function getEtaSig(etas) {
-    var parts = [];
-    for (var i = 0; i < etas.length; i++) parts.push(etas[i].eta + '|' + (etas[i].rmk_tc || ''));
-    return parts.join(';;');
-}
+        function getEtaSig(etas) {
+            var parts = [];
+            for (var i = 0; i < etas.length; i++) parts.push(etas[i].eta + '|' + (etas[i].rmk_tc || ''));
+            return parts.join(';;');
+        }
 
-function buildEtaCell(etas) {
-    var div = el('div');
-    div.className = 'eta-cell';
-    if (!etas.length) {
-        div.innerHTML = '<span class="eta-na">暫無班次</span>';
-        return div;
-    }
-    var sorted = etas.slice().sort(function(a,b){ return a.eta_seq - b.eta_seq; }).slice(0, 4);
-    var primary = sorted[0];
-    var secondary = sorted.slice(1);
-    var pi = getEtaInfo(primary);
-
-    /* Primary */
-    var pDiv = el('div');
-    pDiv.className = 'eta-primary-cell ' + pi.cls;
-    var minSpan = el('span');
-    minSpan.className = 'eta-min' + (pi.cls === 'eta-arriving' ? ' blink' : '');
-    minSpan.textContent = pi.txt;
-    pDiv.appendChild(minSpan);
-    if (pi.diff > 0) {
-        var unitSpan = el('span');
-        unitSpan.className = 'eta-unit';
-        unitSpan.textContent = '分鐘';
-        pDiv.appendChild(unitSpan);
-    }
-    if (pi.rmk) {
-        var rmkSpan = el('span');
-        rmkSpan.className = 'eta-rmk';
-        rmkSpan.textContent = pi.rmk;
-        pDiv.appendChild(rmkSpan);
-    }
-    div.appendChild(pDiv);
-
-    /* Secondary */
-    if (secondary.length) {
-        var sDiv = el('div');
-        sDiv.className = 'eta-secondary-cell';
-        for (var i = 0; i < secondary.length; i++) {
-            var si = getEtaInfo(secondary[i]);
-            var row = el('div');
-            row.className = 'eta-sec-row ' + si.cls;
-            var sm = el('span');
-            sm.className = 'eta-sec-min' + (si.cls === 'eta-arriving' ? ' blink' : '');
-            sm.textContent = si.txt;
-            row.appendChild(sm);
-            if (si.diff > 0) {
-                var su = el('span'); su.className = 'eta-sec-unit'; su.textContent = '分';
-                row.appendChild(su);
+        function buildEtaCell(etas) {
+            var div = el('div');
+            div.className = 'eta-cell';
+            if (!etas.length) {
+                div.innerHTML = '<span class="eta-na">暫無班次</span>';
+                return div;
             }
-            sDiv.appendChild(row);
-        }
-        div.appendChild(sDiv);
-    }
-    return div;
-}
+            var sorted = etas.slice().sort(function (a, b) { return a.eta_seq - b.eta_seq; }).slice(0, 4);
+            var primary = sorted[0];
+            var secondary = sorted.slice(1);
+            var pi = getEtaInfo(primary);
 
-function updateEtaInRow(rowEl, etas) {
-    var old = rowEl.querySelector('.eta-cell');
-    if (!old) return;
-    var newCell = buildEtaCell(etas);
-    newCell.classList.add('eta-flash');
-    rowEl.replaceChild(newCell, old);
-}
+            /* Primary */
+            var pDiv = el('div');
+            pDiv.className = 'eta-primary-cell ' + pi.cls;
+            var minSpan = el('span');
+            minSpan.className = 'eta-min' + (pi.cls === 'eta-arriving' ? ' blink' : '');
+            minSpan.textContent = pi.txt;
+            pDiv.appendChild(minSpan);
+            if (pi.diff > 0) {
+                var unitSpan = el('span');
+                unitSpan.className = 'eta-unit';
+                unitSpan.textContent = '分鐘';
+                pDiv.appendChild(unitSpan);
+            }
+            if (pi.rmk) {
+                var rmkSpan = el('span');
+                rmkSpan.className = 'eta-rmk';
+                rmkSpan.textContent = pi.rmk;
+                pDiv.appendChild(rmkSpan);
+            }
+            div.appendChild(pDiv);
 
-/* ================================================================
-   GROUP ETA DATA
-   ================================================================ */
-function groupEta(etaData, dirFilter, nlbCo, nlbDest) {
-    var g = {};
-    for (var i = 0; i < etaData.length; i++) {
-        var item = etaData[i];
-        var isNlbItem = nlbCo || (item.co || '').toUpperCase() === 'NLB';
-        if (!isNlbItem && dirFilter) {
-            if (dirFilter === 'inbound'  && item.dir !== 'I') continue;
-            if (dirFilter === 'outbound' && item.dir !== 'O') continue;
-        }
-        var k = item.route + ':' + item.dir;
-        if (!g[k]) {
-            var dest = item.dest_tc || (isNlbItem ? (nlbDest || '') : '');
-            g[k] = { route: item.route, dir: item.dir, co: item.co || 'CTB', dest_tc: dest, stop: item.stop, etas: [] };
-        }
-        if (item.dest_tc && !g[k].dest_tc) g[k].dest_tc = item.dest_tc;
-        if (item.eta) g[k].etas.push({ eta: item.eta, rmk_tc: item.rmk_tc || '', eta_seq: 0 });
-    }
-    var entries = [];
-    for (var key in g) {
-        if (g.hasOwnProperty(key)) {
-            var entry = g[key];
-            entry.etas.sort(function(a,b){ return new Date(a.eta) - new Date(b.eta); });
-            for (var j = 0; j < entry.etas.length; j++) entry.etas[j].eta_seq = j + 1;
-            /* Deduplicate within 30s */
-            entry.etas = entry.etas.filter(function(e, idx, arr) {
-                return idx === 0 || Math.abs(new Date(e.eta) - new Date(arr[idx-1].eta)) > 30000;
-            });
-            entries.push(entry);
-        }
-    }
-    entries.sort(function(a,b) {
-        var an = parseInt(a.route, 10) || 0, bn = parseInt(b.route, 10) || 0;
-        return an !== bn ? an - bn : a.route.localeCompare(b.route);
-    });
-    return entries;
-}
-
-/* ================================================================
-   ETA FETCH
-   ================================================================ */
-function fetchCtbEta(stopId, route) {
-    return apiFetch(API.CTB_ETA(stopId, route)).then(function(d) {
-        return (d.data || []).map(function(x) { return Object.assign({}, x, {co: x.co || 'CTB'}); });
-    }).catch(function(){ return []; });
-}
-function fetchKmbEta(stopId, route, st) {
-    return apiFetch(API.KMB_ETA(stopId, route, st || 1)).then(function(d) {
-        return (d.data || []).map(function(x) { return Object.assign({}, x, {co: x.co || 'KMB'}); });
-    }).catch(function(){ return []; });
-}
-function fetchNlbEta(stopId, nlbRouteId, routeNo, nlbDest) {
-    return apiFetch(API.NLB_ETA(stopId, nlbRouteId)).then(function(d) {
-        return (d.estimatedArrivals || []).map(function(x, i) {
-            return {
-                route: routeNo, dir: 'O', co: 'NLB',
-                dest_tc: x.destination_zh || x.destination_tc || x.destination || nlbDest || '',
-                stop: stopId, eta: x.estimatedArrivalTime,
-                rmk_tc: x.remarks_zh || x.remarks_tc || x.remarks || '', eta_seq: i + 1
-            };
-        });
-    }).catch(function(){ return []; });
-}
-
-function fetchJointEta(sd) {
-    var co = sd.company, route = sd.routeId.toUpperCase(), stopId = sd.stopId;
-    if (co === 'NLB') return fetchNlbEta(stopId, sd.nlbRouteId || route, sd.routeId, sd.nlbDest || '');
-    if (co === 'LWB') return fetchKmbEta(stopId, route, sd.serviceType);
-    if (isJoint(route)) {
-        return Promise.all([fetchCtbEta(stopId, route), fetchKmbEta(stopId, route, sd.serviceType)]).then(function(results) {
-            return results[0].concat(results[1]);
-        });
-    }
-    if (co === 'CTB') return fetchCtbEta(stopId, route);
-    if (co === 'KMB') return fetchKmbEta(stopId, route, sd.serviceType);
-    return Promise.resolve([]);
-}
-
-/* ================================================================
-   BUILD ROW
-   ================================================================ */
-function buildBusRow(entry, stopNames, isNew, stopKey, joint) {
-    var row = el('div');
-    row.className = 'bus-row ' + getAccentClass(entry.route, entry.co, joint) + (isNew ? ' row-new' : '');
-    row.dataset.stopKey = stopKey;
-
-    /* Drag handle */
-    var dh = el('div');
-    dh.className = 'drag-handle';
-    dh.textContent = '⠿';
-    row.appendChild(dh);
-
-    /* Route */
-    var rc = el('div');
-    rc.className = 'route-cell';
-    var displayCo = entry.co || 'CTB';
-    if (displayCo === 'KMB' && isLwb(entry.route)) displayCo = 'LWB';
-    var rn = el('span');
-    rn.className = 'route-number ' + getRouteColorClass(entry.route, displayCo);
-    rn.textContent = entry.route;
-    rc.appendChild(rn);
-    row.appendChild(rc);
-
-    /* Stop info */
-    var sc = el('div');
-    sc.className = 'stop-cell';
-    var primary = (stopNames && stopNames.primary) || { name_tc: '--', name_en: '' };
-    var alt = stopNames && stopNames.alt;
-    var dd = el('div');
-    dd.className = 'dest-direction';
-    dd.textContent = entry.dest_tc || '--';
-    sc.appendChild(dd);
-    var sn = el('div');
-    sn.className = 'stop-name';
-    sn.textContent = primary.name_tc;
-    sc.appendChild(sn);
-    if (primary.name_en) {
-        var se = el('div');
-        se.className = 'stop-name-en';
-        se.textContent = primary.name_en;
-        sc.appendChild(se);
-    }
-    if (alt && alt.name_tc) {
-        var altDiv = el('div');
-        altDiv.className = 'stop-name-alt';
-        altDiv.innerHTML = '<span class="alt-badge">' + getCoName(alt.co) + '</span>' + alt.name_tc;
-        sc.appendChild(altDiv);
-    }
-    row.appendChild(sc);
-
-    /* Company — async, returns promise. Append placeholder first. */
-    var coDiv = el('div');
-    coDiv.className = 'company-cell';
-    var tag = el('span');
-    tag.className = 'company-tag-sm tag-' + getCoClass(displayCo);
-    tag.textContent = getCoName(displayCo);
-    coDiv.appendChild(tag);
-    row.appendChild(coDiv);
-
-    buildCompanyCell(displayCo, joint).then(function(cd) {
-        if (row.parentNode) row.replaceChild(cd, coDiv);
-    });
-
-    /* ETA */
-    var ec = buildEtaCell(entry.etas);
-    row.appendChild(ec);
-
-    /* Remove */
-    var rm = el('div');
-    rm.className = 'remove-cell';
-    var rmBtn = el('button');
-    rmBtn.className = 'row-remove-btn';
-    rmBtn.textContent = '✕';
-    rmBtn.title = '移除';
-    (function(key) {
-        rmBtn.onclick = function(e) { e.stopPropagation(); removeStopByKey(key); };
-    })(stopKey);
-    rm.appendChild(rmBtn);
-    row.appendChild(rm);
-
-    return row;
-}
-
-/* ================================================================
-   REMOVE STOP
-   ================================================================ */
-function removeStopByKey(stopKey) {
-    var idx = -1;
-    for (var i = 0; i < state.stops.length; i++) {
-        if (makeStopKey(state.stops[i]) === stopKey) { idx = i; break; }
-    }
-    if (idx < 0) return;
-    state.stops.splice(idx, 1);
-    saveStops();
-    updateClearBtn();
-    if (state.renderedRows[stopKey]) {
-        state.renderedRows[stopKey].el.parentNode && state.renderedRows[stopKey].el.parentNode.removeChild(state.renderedRows[stopKey].el);
-        delete state.renderedRows[stopKey];
-    }
-    if (!state.stops.length) {
-        showMessage('🔍', '請選擇路線及巴士站', '按上方按鈕開始');
-        if (state.refreshTimer) { clearInterval(state.refreshTimer); state.refreshTimer = null; }
-    } else {
-        $('recordCount').textContent = state.stops.length + ' 個站點';
-    }
-}
-
-/* ================================================================
-   SMART UPDATE
-   ================================================================ */
-function smartUpdate(results) {
-    var container = $('busRowsContainer');
-    var seen = {};
-    var toAdd = [];
-
-    for (var i = 0; i < results.length; i++) {
-        var result = results[i];
-        if (!result.etaData.length) continue;
-        var nlbCo = result.company === 'NLB';
-        var joint = !nlbCo && isJoint(result.routeId);
-        var entries = groupEta(result.etaData, result.direction, nlbCo, result.nlbDest);
-
-        for (var j = 0; j < entries.length; j++) {
-            var entry = entries[j];
-            var sk = makeStopKey(result);
-            seen[sk] = true;
-            var sig = getEtaSig(entry.etas);
-
-            if (state.renderedRows[sk]) {
-                if (state.renderedRows[sk].etaSig !== sig) {
-                    updateEtaInRow(state.renderedRows[sk].el, entry.etas);
-                    state.renderedRows[sk].etaSig = sig;
+            /* Secondary */
+            if (secondary.length) {
+                var sDiv = el('div');
+                sDiv.className = 'eta-secondary-cell';
+                for (var i = 0; i < secondary.length; i++) {
+                    var si = getEtaInfo(secondary[i]);
+                    var row = el('div');
+                    row.className = 'eta-sec-row ' + si.cls;
+                    var sm = el('span');
+                    sm.className = 'eta-sec-min' + (si.cls === 'eta-arriving' ? ' blink' : '');
+                    sm.textContent = si.txt;
+                    row.appendChild(sm);
+                    if (si.diff > 0) {
+                        var su = el('span'); su.className = 'eta-sec-unit'; su.textContent = '分';
+                        row.appendChild(su);
+                    }
+                    sDiv.appendChild(row);
                 }
-            } else {
-                toAdd.push({ entry: entry, stopNames: result.stopNames, sk: sk, sig: sig, joint: joint });
+                div.appendChild(sDiv);
             }
+            return div;
         }
-    }
 
-    /* Remove gone rows */
-    for (var key in state.renderedRows) {
-        if (state.renderedRows.hasOwnProperty(key) && !seen[key]) {
-            var rowEl = state.renderedRows[key].el;
-            rowEl.parentNode && rowEl.parentNode.removeChild(rowEl);
-            delete state.renderedRows[key];
+        function updateEtaInRow(rowEl, etas) {
+            var old = rowEl.querySelector('.eta-cell');
+            if (!old) return;
+            var newCell = buildEtaCell(etas);
+            newCell.classList.add('eta-flash');
+            rowEl.replaceChild(newCell, old);
         }
-    }
 
-    /* Add new rows */
-    for (var k = 0; k < toAdd.length; k++) {
-        (function(item) {
-            var row = buildBusRow(item.entry, item.stopNames, true, item.sk, item.joint);
-            container.appendChild(row);
-            state.renderedRows[item.sk] = { el: row, etaSig: item.sig };
-        })(toAdd[k]);
-    }
-}
+        /* ================================================================
+           GROUP ETA DATA
+           ================================================================ */
+        function groupEta(etaData, dirFilter, nlbCo, nlbDest) {
+            var g = {};
+            for (var i = 0; i < etaData.length; i++) {
+                var item = etaData[i];
+                var isNlbItem = nlbCo || (item.co || '').toUpperCase() === 'NLB';
+                if (!isNlbItem && dirFilter) {
+                    if (dirFilter === 'inbound' && item.dir !== 'I') continue;
+                    if (dirFilter === 'outbound' && item.dir !== 'O') continue;
+                }
+                var k = item.route + ':' + item.dir;
+                if (!g[k]) {
+                    var dest = item.dest_tc || (isNlbItem ? (nlbDest || '') : '');
+                    g[k] = { route: item.route, dir: item.dir, co: item.co || 'CTB', dest_tc: dest, stop: item.stop, etas: [] };
+                }
+                if (item.dest_tc && !g[k].dest_tc) g[k].dest_tc = item.dest_tc;
+                if (item.eta) g[k].etas.push({ eta: item.eta, rmk_tc: item.rmk_tc || '', eta_seq: 0 });
+            }
+            var entries = [];
+            for (var key in g) {
+                if (g.hasOwnProperty(key)) {
+                    var entry = g[key];
+                    entry.etas.sort(function (a, b) { return new Date(a.eta) - new Date(b.eta); });
+                    for (var j = 0; j < entry.etas.length; j++) entry.etas[j].eta_seq = j + 1;
+                    /* Deduplicate within 30s */
+                    entry.etas = entry.etas.filter(function (e, idx, arr) {
+                        return idx === 0 || Math.abs(new Date(e.eta) - new Date(arr[idx - 1].eta)) > 30000;
+                    });
+                    entries.push(entry);
+                }
+            }
+            entries.sort(function (a, b) {
+                var an = parseInt(a.route, 10) || 0, bn = parseInt(b.route, 10) || 0;
+                return an !== bn ? an - bn : a.route.localeCompare(b.route);
+            });
+            return entries;
+        }
 
-/* ================================================================
-   FETCH ALL ETAs
-   ================================================================ */
-function doRefresh() {
-    fetchMultiETA();
-}
-
-function fetchMultiETA() {
-    if (!state.stops.length) {
-        showMessage('⚠️', '請先選擇路線及巴士站', '按「選擇路線 / 巴士站」按鈕開始。');
-        setStatus('error', '尚未選擇');
-        return;
-    }
-    setStatus('loading', '正在查詢 ' + state.stops.length + ' 個站點...');
-    if (state.refreshTimer) clearInterval(state.refreshTimer);
-
-    var promises = state.stops.map(function(sd) {
-        var nlbCo = sd.company === 'NLB';
-        var joint = !nlbCo && isJoint(sd.routeId);
-
-        var namePromise;
-        if (sd.stopInfo) {
-            var primary = sd.stopInfo;
-            if (joint && !sd.altStopName) {
-                var otherCo = (sd.company === 'CTB' || sd.company === 'NWFB') ? 'KMB' : 'CTB';
-                namePromise = fetchStopNameFromCo(sd.stopId, otherCo).then(function(other) {
-                    if (other && other.name_tc !== primary.name_tc) sd.altStopName = Object.assign({}, other, { co: otherCo });
-                    return { primary: primary, alt: sd.altStopName || null };
+        /* ================================================================
+           ETA FETCH
+           ================================================================ */
+        function fetchCtbEta(stopId, route) {
+            return apiFetch(API.CTB_ETA(stopId, route)).then(function (d) {
+                return (d.data || []).map(function (x) { return Object.assign({}, x, { co: x.co || 'CTB' }); });
+            }).catch(function () { return []; });
+        }
+        function fetchKmbEta(stopId, route, st) {
+            return apiFetch(API.KMB_ETA(stopId, route, st || 1)).then(function (d) {
+                return (d.data || []).map(function (x) { return Object.assign({}, x, { co: x.co || 'KMB' }); });
+            }).catch(function () { return []; });
+        }
+        function fetchNlbEta(stopId, nlbRouteId, routeNo, nlbDest) {
+            return apiFetch(API.NLB_ETA(stopId, nlbRouteId)).then(function (d) {
+                return (d.estimatedArrivals || []).map(function (x, i) {
+                    return {
+                        route: routeNo, dir: 'O', co: 'NLB',
+                        dest_tc: x.destination_zh || x.destination_tc || x.destination || nlbDest || '',
+                        stop: stopId, eta: x.estimatedArrivalTime,
+                        rmk_tc: x.remarks_zh || x.remarks_tc || x.remarks || '', eta_seq: i + 1
+                    };
                 });
-            } else {
-                namePromise = Promise.resolve({ primary: primary, alt: sd.altStopName || null });
+            }).catch(function () { return []; });
+        }
+
+        function fetchJointEta(sd) {
+            var co = sd.company, route = sd.routeId.toUpperCase(), stopId = sd.stopId;
+            if (co === 'NLB') return fetchNlbEta(stopId, sd.nlbRouteId || route, sd.routeId, sd.nlbDest || '');
+            if (co === 'LWB') return fetchKmbEta(stopId, route, sd.serviceType);
+            if (isJoint(route)) {
+                return Promise.all([fetchCtbEta(stopId, route), fetchKmbEta(stopId, route, sd.serviceType)]).then(function (results) {
+                    return results[0].concat(results[1]);
+                });
             }
-        } else {
-            namePromise = fetchStopNames(sd.stopId, sd.company, joint).then(function(names) {
-                sd.stopInfo = names.primary;
-                sd.altStopName = names.alt;
-                return names;
-            });
+            if (co === 'CTB') return fetchCtbEta(stopId, route);
+            if (co === 'KMB') return fetchKmbEta(stopId, route, sd.serviceType);
+            return Promise.resolve([]);
         }
 
-        return namePromise.then(function(stopNames) {
-            return fetchJointEta(sd).then(function(etaData) {
-                return {
-                    stopId: sd.stopId, routeId: sd.routeId, nlbRouteId: sd.nlbRouteId || null,
-                    direction: sd.direction, company: sd.company,
-                    stopNames: stopNames, nlbDest: sd.nlbDest || '', etaData: etaData
-                };
-            });
-        }).catch(function(){ return null; });
-    });
+        /* ================================================================
+           BUILD ROW
+           ================================================================ */
+        function buildBusRow(entry, stopNames, isNew, stopKey, joint) {
+            var row = el('div');
+            row.className = 'bus-row ' + getAccentClass(entry.route, entry.co, joint) + (isNew ? ' row-new' : '');
+            row.dataset.stopKey = stopKey;
 
-    Promise.all(promises).then(function(results) {
-        var valid = results.filter(function(r){ return r !== null; });
-        if (!valid.length) {
-            showMessage('🚏', '所有站點均無資料', '請檢查路線及站點');
-            setStatus('error', '無資料');
-            return;
+            /* Drag handle */
+            var dh = el('div');
+            dh.className = 'drag-handle';
+            dh.textContent = '⠿';
+            row.appendChild(dh);
+
+            /* Route */
+            var rc = el('div');
+            rc.className = 'route-cell';
+            var displayCo = entry.co || 'CTB';
+            if (displayCo === 'KMB' && isLwb(entry.route)) displayCo = 'LWB';
+            var rn = el('span');
+            rn.className = 'route-number ' + getRouteColorClass(entry.route, displayCo);
+            rn.textContent = entry.route;
+            rc.appendChild(rn);
+            row.appendChild(rc);
+
+            /* Stop info */
+            var sc = el('div');
+            sc.className = 'stop-cell';
+            var primary = (stopNames && stopNames.primary) || { name_tc: '--', name_en: '' };
+            var alt = stopNames && stopNames.alt;
+            var dd = el('div');
+            dd.className = 'dest-direction';
+            dd.textContent = entry.dest_tc || '--';
+            sc.appendChild(dd);
+            var sn = el('div');
+            sn.className = 'stop-name';
+            sn.textContent = primary.name_tc;
+            sc.appendChild(sn);
+            if (primary.name_en) {
+                var se = el('div');
+                se.className = 'stop-name-en';
+                se.textContent = primary.name_en;
+                sc.appendChild(se);
+            }
+            if (alt && alt.name_tc) {
+                var altDiv = el('div');
+                altDiv.className = 'stop-name-alt';
+                altDiv.innerHTML = '<span class="alt-badge">' + getCoName(alt.co) + '</span>' + alt.name_tc;
+                sc.appendChild(altDiv);
+            }
+            row.appendChild(sc);
+
+            /* Company — async, returns promise. Append placeholder first. */
+            var coDiv = el('div');
+            coDiv.className = 'company-cell';
+            var tag = el('span');
+            tag.className = 'company-tag-sm tag-' + getCoClass(displayCo);
+            tag.textContent = getCoName(displayCo);
+            coDiv.appendChild(tag);
+            row.appendChild(coDiv);
+
+            buildCompanyCell(displayCo, joint).then(function (cd) {
+                if (row.parentNode) row.replaceChild(cd, coDiv);
+            });
+
+            /* ETA */
+            var ec = buildEtaCell(entry.etas);
+            row.appendChild(ec);
+
+            /* Remove */
+            var rm = el('div');
+            rm.className = 'remove-cell';
+            var rmBtn = el('button');
+            rmBtn.className = 'row-remove-btn';
+            rmBtn.textContent = '✕';
+            rmBtn.title = '移除';
+            (function (key) {
+                rmBtn.onclick = function (e) { e.stopPropagation(); removeStopByKey(key); };
+            })(stopKey);
+            rm.appendChild(rmBtn);
+            row.appendChild(rm);
+
+            return row;
         }
 
-        var container = $('busRowsContainer');
-        if (state.isFirstRender) {
-            container.innerHTML = '';
-            state.renderedRows = {};
-            for (var i = 0; i < valid.length; i++) {
-                var result = valid[i];
+        /* ================================================================
+           REMOVE STOP
+           ================================================================ */
+        function removeStopByKey(stopKey) {
+            var idx = -1;
+            for (var i = 0; i < state.stops.length; i++) {
+                if (makeStopKey(state.stops[i]) === stopKey) { idx = i; break; }
+            }
+            if (idx < 0) return;
+            state.stops.splice(idx, 1);
+            saveStops();
+            updateClearBtn();
+            if (state.renderedRows[stopKey]) {
+                state.renderedRows[stopKey].el.parentNode && state.renderedRows[stopKey].el.parentNode.removeChild(state.renderedRows[stopKey].el);
+                delete state.renderedRows[stopKey];
+            }
+            if (!state.stops.length) {
+                showMessage('🔍', '請選擇路線及巴士站', '按上方按鈕開始');
+                if (state.refreshTimer) { clearInterval(state.refreshTimer); state.refreshTimer = null; }
+            } else {
+                $('recordCount').textContent = state.stops.length + ' 個站點';
+            }
+        }
+
+        /* ================================================================
+           SMART UPDATE
+           ================================================================ */
+        function smartUpdate(results) {
+            var container = $('busRowsContainer');
+            var seen = {};
+            var toAdd = [];
+
+            for (var i = 0; i < results.length; i++) {
+                var result = results[i];
                 if (!result.etaData.length) continue;
                 var nlbCo = result.company === 'NLB';
                 var joint = !nlbCo && isJoint(result.routeId);
                 var entries = groupEta(result.etaData, result.direction, nlbCo, result.nlbDest);
+
                 for (var j = 0; j < entries.length; j++) {
                     var entry = entries[j];
                     var sk = makeStopKey(result);
-                    var row = buildBusRow(entry, result.stopNames, true, sk, joint);
-                    container.appendChild(row);
-                    state.renderedRows[sk] = { el: row, etaSig: getEtaSig(entry.etas) };
+                    seen[sk] = true;
+                    var sig = getEtaSig(entry.etas);
+
+                    if (state.renderedRows[sk]) {
+                        if (state.renderedRows[sk].etaSig !== sig) {
+                            updateEtaInRow(state.renderedRows[sk].el, entry.etas);
+                            state.renderedRows[sk].etaSig = sig;
+                        }
+                    } else {
+                        toAdd.push({ entry: entry, stopNames: result.stopNames, sk: sk, sig: sig, joint: joint });
+                    }
                 }
             }
-            state.isFirstRender = false;
-        } else {
-            smartUpdate(valid);
-        }
 
-        if (!container.children.length || container.querySelector('.message-container')) {
-            showMessage('🚏', '暫無到站資料', '所選站點目前沒有巴士到站資訊');
-        }
-
-        var now = new Date();
-        var pad = function(n){ return n < 10 ? '0'+n : ''+n; };
-        $('lastUpdate').textContent = pad(now.getHours()) + ':' + pad(now.getMinutes()) + ':' + pad(now.getSeconds());
-        $('recordCount').textContent = state.stops.length + ' 個站點';
-        setStatus('ok', '已更新 ' + valid.length + '/' + state.stops.length + ' 個站點');
-
-        state.refreshTimer = setInterval(fetchMultiETA, REFRESH_MS);
-    }).catch(function(e) {
-        showMessage('❌', '查詢失敗', e.message);
-        setStatus('error', '查詢失敗');
-    });
-}
-
-function showMessage(icon, text, sub) {
-    state.renderedRows = {};
-    state.isFirstRender = true;
-    var html = '<div class="message-container"><div class="icon">' + icon + '</div><div class="text">' + text + '</div>';
-    if (sub) html += '<div class="subtext">' + sub + '</div>';
-    html += '</div>';
-    $('busRowsContainer').innerHTML = html;
-    $('recordCount').textContent = '0 個站點';
-}
-
-function clearAll() {
-    state.stops = [];
-    saveStops();
-    state.renderedRows = {};
-    state.isFirstRender = true;
-    showMessage('🔍', '請選擇路線及巴士站', '按上方按鈕開始');
-    $('clearBtn').style.display = 'none';
-    if (state.refreshTimer) { clearInterval(state.refreshTimer); state.refreshTimer = null; }
-}
-
-function updateClearBtn() {
-    $('clearBtn').style.display = state.stops.length > 0 ? '' : 'none';
-}
-
-/* ================================================================
-   MODAL — ROUTE LIST
-   ================================================================ */
-function openModal() { $('modal').classList.add('active'); loadRouteListForCo(state.selectedCo); }
-function closeModal() { $('modal').classList.remove('active'); }
-
-function selectCo(co) {
-    state.selectedCo = co;
-    state.selectedDir = null;
-    var btns = qsa('.co-btn');
-    for (var i = 0; i < btns.length; i++) btns[i].classList.toggle('active', btns[i].dataset.co === co);
-    var dirLbl = $('dirLabel'), dirBtns = $('dirButtons');
-    if (co === 'NLB') { dirLbl.style.display = 'none'; dirBtns.style.display = 'none'; }
-    else { dirLbl.style.display = ''; dirBtns.style.display = ''; }
-    $('dirIn').classList.remove('active'); $('dirOut').classList.remove('active');
-    $('stopList').innerHTML = '<div class="stop-list-empty">尚未載入巴士站。</div>';
-    $('modalTitle').textContent = '請先選擇路線及方向';
-    $('routeFilter').value = '';
-    loadRouteListForCo(co);
-}
-
-function setDir(dir) {
-    state.selectedDir = dir;
-    $('dirIn').classList.toggle('active',  dir === 'inbound');
-    $('dirOut').classList.toggle('active', dir === 'outbound');
-}
-
-function filterRoutes() {
-    var v = $('routeFilter').value.trim().toLowerCase();
-    var opts = $('routeSelect').options;
-    for (var i = 0; i < opts.length; i++) {
-        opts[i].style.display = opts[i].text.toLowerCase().indexOf(v) >= 0 ? '' : 'none';
-    }
-}
-
-function onRouteChange() {
-    var sel = $('routeSelect');
-    var opt = sel.options[sel.selectedIndex];
-    if (!opt) return;
-    var co = state.selectedCo;
-    if (co === 'NLB') $('modalTitle').textContent = '已選路線：' + opt.value + '（' + (opt.dataset.origTc || '') + '）';
-    else $('modalTitle').textContent = '已選路線：' + opt.value + '（' + (opt.dataset.origTc || '') + ' ↔ ' + (opt.dataset.destTc || '') + '）';
-}
-
-function loadRouteListForCo(co) {
-    var apiCo = co === 'LWB' ? 'KMB' : co;
-    if (state.routeListCache[co]) { populateRouteSelect(state.routeListCache[co], co); return; }
-    var sel = $('routeSelect');
-    sel.innerHTML = '<option disabled>載入中...</option>';
-
-    if (apiCo === 'CTB') {
-        apiFetch(API.CTB_ROUTE_LIST).then(function(d) {
-            var list = (d.data || []).map(function(x){ return {route:x.route,orig_tc:x.orig_tc,dest_tc:x.dest_tc,co:'CTB'}; });
-            state.routeListCache.CTB = list;
-            populateRouteSelect(list, 'CTB');
-        }).catch(function(){ sel.innerHTML = '<option disabled>載入失敗</option>'; });
-    } else if (apiCo === 'KMB') {
-        var doSplit = function(raw) {
-            var kR=[], lR=[], sK={}, sL={};
-            for (var i = 0; i < raw.length; i++) {
-                var x = raw[i];
-                if (isLwb(x.route)) { if (!sL[x.route]) { sL[x.route]=1; lR.push({route:x.route,orig_tc:x.orig_tc,dest_tc:x.dest_tc,co:'LWB',service_type:x.service_type,bound:x.bound}); } }
-                else { if (!sK[x.route]) { sK[x.route]=1; kR.push({route:x.route,orig_tc:x.orig_tc,dest_tc:x.dest_tc,co:'KMB',service_type:x.service_type,bound:x.bound}); } }
+            /* Remove gone rows */
+            for (var key in state.renderedRows) {
+                if (state.renderedRows.hasOwnProperty(key) && !seen[key]) {
+                    var rowEl = state.renderedRows[key].el;
+                    rowEl.parentNode && rowEl.parentNode.removeChild(rowEl);
+                    delete state.renderedRows[key];
+                }
             }
-            state.kmbFull = raw;
-            state.routeListCache.KMB = kR;
-            state.routeListCache.LWB = lR;
-        };
-        if (state.kmbRaw) {
-            doSplit(state.kmbRaw);
-            populateRouteSelect(state.routeListCache[co], co);
-        } else {
-            apiFetch(API.KMB_ROUTE_LIST).then(function(d) {
-                state.kmbRaw = d.data || [];
-                doSplit(state.kmbRaw);
-                populateRouteSelect(state.routeListCache[co], co);
-            }).catch(function(){ sel.innerHTML = '<option disabled>載入失敗</option>'; });
-        }
-    } else if (apiCo === 'NLB') {
-        apiFetch(API.NLB_ROUTE_LIST).then(function(d) {
-            var list = (d.routes || []).map(function(x){ return {route:x.routeNo,orig_tc:x.routeName_c||x.routeNo,dest_tc:x.routeName_c||'',co:'NLB',nlbRouteId:x.routeId}; });
-            state.routeListCache.NLB = list;
-            populateRouteSelect(list, 'NLB');
-        }).catch(function(){ sel.innerHTML = '<option disabled>載入失敗</option>'; });
-    }
-}
 
-function populateRouteSelect(list, co) {
-    var sel = $('routeSelect');
-    sel.innerHTML = '';
-    var sorted = list.slice().sort(function(a,b) {
-        var an = parseInt(a.route, 10) || 0, bn = parseInt(b.route, 10) || 0;
-        return an !== bn ? an - bn : a.route.localeCompare(b.route);
-    });
-    for (var i = 0; i < sorted.length; i++) {
-        var r = sorted[i];
-        var opt = el('option');
-        opt.value = r.route;
-        opt.text  = co === 'NLB' ? r.route + ' — ' + r.orig_tc : r.route + ' — ' + (r.orig_tc||'') + ' ↔ ' + (r.dest_tc||'');
-        opt.dataset.origTc = r.orig_tc || '';
-        opt.dataset.destTc = r.dest_tc || '';
-        if (r.nlbRouteId) opt.dataset.nlbRouteId = r.nlbRouteId;
-        sel.appendChild(opt);
-    }
-}
-
-/* ================================================================
-   LOAD STOPS FOR SELECTION
-   ================================================================ */
-function loadStops() {
-    var sel = $('routeSelect');
-    var opt = sel.options[sel.selectedIndex];
-    if (!opt) { $('stopList').innerHTML = '<div class="stop-list-empty">請先選擇路線。</div>'; return; }
-    var co = state.selectedCo, route = opt.value;
-    if (co !== 'NLB' && !state.selectedDir) { $('stopList').innerHTML = '<div class="stop-list-empty">請先選擇方向。</div>'; return; }
-
-    var loadBtn = $('loadBtn');
-    loadBtn.disabled = true;
-    $('stopList').innerHTML = '<div class="stop-list-empty">正在載入...</div>';
-
-    var promise;
-    if (co === 'CTB') {
-        promise = apiFetch(API.CTB_ROUTE_STOP(route, state.selectedDir)).then(function(d) {
-            var stops = d.data || [];
-            return Promise.all(stops.map(function(s) {
-                return fetchStopName(s.stop, 'CTB').then(function(info) { return { id: s.stop, info: info }; });
-            })).then(function(items) { return { items: items, co: 'CTB', st: 1, nlbId: null, nlbDest: null }; });
-        });
-    } else if (co === 'KMB' || co === 'LWB') {
-        var kmbDir = state.selectedDir === 'inbound' ? 'inbound' : 'outbound';
-        var st = 1;
-        if (state.kmbFull) {
-            var bound = state.selectedDir === 'inbound' ? 'I' : 'O';
-            for (var i = 0; i < state.kmbFull.length; i++) {
-                if (state.kmbFull[i].route === route && state.kmbFull[i].bound === bound) { st = state.kmbFull[i].service_type || 1; break; }
+            /* Add new rows */
+            for (var k = 0; k < toAdd.length; k++) {
+                (function (item) {
+                    var row = buildBusRow(item.entry, item.stopNames, true, item.sk, item.joint);
+                    container.appendChild(row);
+                    state.renderedRows[item.sk] = { el: row, etaSig: item.sig };
+                })(toAdd[k]);
             }
         }
-        promise = apiFetch(API.KMB_ROUTE_STOP(route, kmbDir, st)).then(function(d) {
-            var stops = d.data || [];
-            var stt = st;
-            return Promise.all(stops.map(function(s) {
-                return fetchStopName(s.stop, 'KMB').then(function(info) { return { id: s.stop, info: info }; });
-            })).then(function(items) { return { items: items, co: co, st: stt, nlbId: null, nlbDest: null }; });
-        });
-    } else { /* NLB */
-        var nlbId   = opt.dataset.nlbRouteId || '';
-        var nlbDest = opt.dataset.destTc || opt.dataset.origTc || route;
-        if (!nlbId) { $('stopList').innerHTML = '<div class="stop-list-empty">無法取得路線ID。</div>'; loadBtn.disabled = false; return; }
-        promise = apiFetch(API.NLB_ROUTE_STOP(nlbId)).then(function(d) {
-            var stops = d.stops || [];
-            var items = stops.map(function(s) {
-                var ntc = s.stopName_zh || s.stopName_c || s.stopId || '';
-                var nen = s.stopName_en || s.stopName_e || '';
-                var sid = s.stopId || s.stop || '';
-                var info = { name_tc: ntc, name_en: nen };
-                state.stopNameCache['NLB_' + sid] = info;
-                return { id: sid, info: info };
+
+        /* ================================================================
+           FETCH ALL ETAs
+           ================================================================ */
+        function doRefresh() {
+            fetchMultiETA();
+        }
+
+        function fetchMultiETA() {
+            if (!state.stops.length) {
+                showMessage('⚠️', '請先選擇路線及巴士站', '按「選擇路線 / 巴士站」按鈕開始。');
+                setStatus('error', '尚未選擇');
+                return;
+            }
+            setStatus('loading', '正在查詢 ' + state.stops.length + ' 個站點...');
+            if (state.refreshTimer) clearInterval(state.refreshTimer);
+
+            var promises = state.stops.map(function (sd) {
+                var nlbCo = sd.company === 'NLB';
+                var joint = !nlbCo && isJoint(sd.routeId);
+
+                var namePromise;
+                if (sd.stopInfo) {
+                    var primary = sd.stopInfo;
+                    if (joint && !sd.altStopName) {
+                        var otherCo = (sd.company === 'CTB' || sd.company === 'NWFB') ? 'KMB' : 'CTB';
+                        namePromise = fetchStopNameFromCo(sd.stopId, otherCo).then(function (other) {
+                            if (other && other.name_tc !== primary.name_tc) sd.altStopName = Object.assign({}, other, { co: otherCo });
+                            return { primary: primary, alt: sd.altStopName || null };
+                        });
+                    } else {
+                        namePromise = Promise.resolve({ primary: primary, alt: sd.altStopName || null });
+                    }
+                } else {
+                    namePromise = fetchStopNames(sd.stopId, sd.company, joint).then(function (names) {
+                        sd.stopInfo = names.primary;
+                        sd.altStopName = names.alt;
+                        return names;
+                    });
+                }
+
+                return namePromise.then(function (stopNames) {
+                    return fetchJointEta(sd).then(function (etaData) {
+                        return {
+                            stopId: sd.stopId, routeId: sd.routeId, nlbRouteId: sd.nlbRouteId || null,
+                            direction: sd.direction, company: sd.company,
+                            stopNames: stopNames, nlbDest: sd.nlbDest || '', etaData: etaData
+                        };
+                    });
+                }).catch(function () { return null; });
             });
-            return { items: items, co: 'NLB', st: 1, nlbId: nlbId, nlbDest: nlbDest };
+
+            Promise.all(promises).then(function (results) {
+                var valid = results.filter(function (r) { return r !== null; });
+                if (!valid.length) {
+                    showMessage('🚏', '所有站點均無資料', '請檢查路線及站點');
+                    setStatus('error', '無資料');
+                    return;
+                }
+
+                var container = $('busRowsContainer');
+                if (state.isFirstRender) {
+                    container.innerHTML = '';
+                    state.renderedRows = {};
+                    for (var i = 0; i < valid.length; i++) {
+                        var result = valid[i];
+                        if (!result.etaData.length) continue;
+                        var nlbCo = result.company === 'NLB';
+                        var joint = !nlbCo && isJoint(result.routeId);
+                        var entries = groupEta(result.etaData, result.direction, nlbCo, result.nlbDest);
+                        for (var j = 0; j < entries.length; j++) {
+                            var entry = entries[j];
+                            var sk = makeStopKey(result);
+                            var row = buildBusRow(entry, result.stopNames, true, sk, joint);
+                            container.appendChild(row);
+                            state.renderedRows[sk] = { el: row, etaSig: getEtaSig(entry.etas) };
+                        }
+                    }
+                    state.isFirstRender = false;
+                } else {
+                    smartUpdate(valid);
+                }
+
+                if (!container.children.length || container.querySelector('.message-container')) {
+                    showMessage('🚏', '暫無到站資料', '所選站點目前沒有巴士到站資訊');
+                }
+
+                var now = new Date();
+                var pad = function (n) { return n < 10 ? '0' + n : '' + n; };
+                $('lastUpdate').textContent = pad(now.getHours()) + ':' + pad(now.getMinutes()) + ':' + pad(now.getSeconds());
+                $('recordCount').textContent = state.stops.length + ' 個站點';
+                setStatus('ok', '已更新 ' + valid.length + '/' + state.stops.length + ' 個站點');
+
+                state.refreshTimer = setInterval(fetchMultiETA, REFRESH_MS);
+            }).catch(function (e) {
+                showMessage('❌', '查詢失敗', e.message);
+                setStatus('error', '查詢失敗');
+            });
+        }
+
+        function showMessage(icon, text, sub) {
+            state.renderedRows = {};
+            state.isFirstRender = true;
+            var html = '<div class="message-container"><div class="icon">' + icon + '</div><div class="text">' + text + '</div>';
+            if (sub) html += '<div class="subtext">' + sub + '</div>';
+            html += '</div>';
+            $('busRowsContainer').innerHTML = html;
+            $('recordCount').textContent = '0 個站點';
+        }
+
+        function clearAll() {
+            state.stops = [];
+            saveStops();
+            state.renderedRows = {};
+            state.isFirstRender = true;
+            showMessage('🔍', '請選擇路線及巴士站', '按上方按鈕開始');
+            $('clearBtn').style.display = 'none';
+            if (state.refreshTimer) { clearInterval(state.refreshTimer); state.refreshTimer = null; }
+        }
+
+        function updateClearBtn() {
+            $('clearBtn').style.display = state.stops.length > 0 ? '' : 'none';
+        }
+
+        /* ================================================================
+           MODAL — ROUTE LIST
+           ================================================================ */
+        function openModal() { $('modal').classList.add('active'); loadRouteListForCo(state.selectedCo); }
+        function closeModal() { $('modal').classList.remove('active'); }
+
+        function selectCo(co) {
+            state.selectedCo = co;
+            state.selectedDir = null;
+            var btns = qsa('.co-btn');
+            for (var i = 0; i < btns.length; i++) btns[i].classList.toggle('active', btns[i].dataset.co === co);
+            var dirLbl = $('dirLabel'), dirBtns = $('dirButtons');
+            if (co === 'NLB') { dirLbl.style.display = 'none'; dirBtns.style.display = 'none'; }
+            else { dirLbl.style.display = ''; dirBtns.style.display = ''; }
+            $('dirIn').classList.remove('active'); $('dirOut').classList.remove('active');
+            $('stopList').innerHTML = '<div class="stop-list-empty">尚未載入巴士站。</div>';
+            $('modalTitle').textContent = '請先選擇路線及方向';
+            $('routeFilter').value = '';
+            loadRouteListForCo(co);
+        }
+
+        function setDir(dir) {
+            state.selectedDir = dir;
+            $('dirIn').classList.toggle('active', dir === 'inbound');
+            $('dirOut').classList.toggle('active', dir === 'outbound');
+        }
+
+        function filterRoutes() {
+            var v = $('routeFilter').value.trim().toLowerCase();
+            var opts = $('routeSelect').options;
+            for (var i = 0; i < opts.length; i++) {
+                opts[i].style.display = opts[i].text.toLowerCase().indexOf(v) >= 0 ? '' : 'none';
+            }
+        }
+
+        function onRouteChange() {
+            var sel = $('routeSelect');
+            var opt = sel.options[sel.selectedIndex];
+            if (!opt) return;
+            var co = state.selectedCo;
+            if (co === 'NLB') $('modalTitle').textContent = '已選路線：' + opt.value + '（' + (opt.dataset.origTc || '') + '）';
+            else $('modalTitle').textContent = '已選路線：' + opt.value + '（' + (opt.dataset.origTc || '') + ' ↔ ' + (opt.dataset.destTc || '') + '）';
+        }
+
+        function loadRouteListForCo(co) {
+            var apiCo = co === 'LWB' ? 'KMB' : co;
+            if (state.routeListCache[co]) { populateRouteSelect(state.routeListCache[co], co); return; }
+            var sel = $('routeSelect');
+            sel.innerHTML = '<option disabled>載入中...</option>';
+
+            if (apiCo === 'CTB') {
+                apiFetch(API.CTB_ROUTE_LIST).then(function (d) {
+                    var list = (d.data || []).map(function (x) { return { route: x.route, orig_tc: x.orig_tc, dest_tc: x.dest_tc, co: 'CTB' }; });
+                    state.routeListCache.CTB = list;
+                    populateRouteSelect(list, 'CTB');
+                }).catch(function () { sel.innerHTML = '<option disabled>載入失敗</option>'; });
+            } else if (apiCo === 'KMB') {
+                var doSplit = function (raw) {
+                    var kR = [], lR = [], sK = {}, sL = {};
+                    for (var i = 0; i < raw.length; i++) {
+                        var x = raw[i];
+                        if (isLwb(x.route)) { if (!sL[x.route]) { sL[x.route] = 1; lR.push({ route: x.route, orig_tc: x.orig_tc, dest_tc: x.dest_tc, co: 'LWB', service_type: x.service_type, bound: x.bound }); } }
+                        else { if (!sK[x.route]) { sK[x.route] = 1; kR.push({ route: x.route, orig_tc: x.orig_tc, dest_tc: x.dest_tc, co: 'KMB', service_type: x.service_type, bound: x.bound }); } }
+                    }
+                    state.kmbFull = raw;
+                    state.routeListCache.KMB = kR;
+                    state.routeListCache.LWB = lR;
+                };
+                if (state.kmbRaw) {
+                    doSplit(state.kmbRaw);
+                    populateRouteSelect(state.routeListCache[co], co);
+                } else {
+                    apiFetch(API.KMB_ROUTE_LIST).then(function (d) {
+                        state.kmbRaw = d.data || [];
+                        doSplit(state.kmbRaw);
+                        populateRouteSelect(state.routeListCache[co], co);
+                    }).catch(function () { sel.innerHTML = '<option disabled>載入失敗</option>'; });
+                }
+            } else if (apiCo === 'NLB') {
+                apiFetch(API.NLB_ROUTE_LIST).then(function (d) {
+                    var list = (d.routes || []).map(function (x) { return { route: x.routeNo, orig_tc: x.routeName_c || x.routeNo, dest_tc: x.routeName_c || '', co: 'NLB', nlbRouteId: x.routeId }; });
+                    state.routeListCache.NLB = list;
+                    populateRouteSelect(list, 'NLB');
+                }).catch(function () { sel.innerHTML = '<option disabled>載入失敗</option>'; });
+            }
+        }
+
+        function populateRouteSelect(list, co) {
+            var sel = $('routeSelect');
+            sel.innerHTML = '';
+            var sorted = list.slice().sort(function (a, b) {
+                var an = parseInt(a.route, 10) || 0, bn = parseInt(b.route, 10) || 0;
+                return an !== bn ? an - bn : a.route.localeCompare(b.route);
+            });
+            for (var i = 0; i < sorted.length; i++) {
+                var r = sorted[i];
+                var opt = el('option');
+                opt.value = r.route;
+                opt.text = co === 'NLB' ? r.route + ' — ' + r.orig_tc : r.route + ' — ' + (r.orig_tc || '') + ' ↔ ' + (r.dest_tc || '');
+                opt.dataset.origTc = r.orig_tc || '';
+                opt.dataset.destTc = r.dest_tc || '';
+                if (r.nlbRouteId) opt.dataset.nlbRouteId = r.nlbRouteId;
+                sel.appendChild(opt);
+            }
+        }
+
+        /* ================================================================
+           LOAD STOPS FOR SELECTION
+           ================================================================ */
+        function loadStops() {
+            var sel = $('routeSelect');
+            var opt = sel.options[sel.selectedIndex];
+            if (!opt) { $('stopList').innerHTML = '<div class="stop-list-empty">請先選擇路線。</div>'; return; }
+            var co = state.selectedCo, route = opt.value;
+            if (co !== 'NLB' && !state.selectedDir) { $('stopList').innerHTML = '<div class="stop-list-empty">請先選擇方向。</div>'; return; }
+
+            var loadBtn = $('loadBtn');
+            loadBtn.disabled = true;
+            $('stopList').innerHTML = '<div class="stop-list-empty">正在載入...</div>';
+
+            var promise;
+            if (co === 'CTB') {
+                promise = apiFetch(API.CTB_ROUTE_STOP(route, state.selectedDir)).then(function (d) {
+                    var stops = d.data || [];
+                    return Promise.all(stops.map(function (s) {
+                        return fetchStopName(s.stop, 'CTB').then(function (info) { return { id: s.stop, info: info }; });
+                    })).then(function (items) { return { items: items, co: 'CTB', st: 1, nlbId: null, nlbDest: null }; });
+                });
+            } else if (co === 'KMB' || co === 'LWB') {
+                var kmbDir = state.selectedDir === 'inbound' ? 'inbound' : 'outbound';
+                var st = 1;
+                if (state.kmbFull) {
+                    var bound = state.selectedDir === 'inbound' ? 'I' : 'O';
+                    for (var i = 0; i < state.kmbFull.length; i++) {
+                        if (state.kmbFull[i].route === route && state.kmbFull[i].bound === bound) { st = state.kmbFull[i].service_type || 1; break; }
+                    }
+                }
+                promise = apiFetch(API.KMB_ROUTE_STOP(route, kmbDir, st)).then(function (d) {
+                    var stops = d.data || [];
+                    var stt = st;
+                    return Promise.all(stops.map(function (s) {
+                        return fetchStopName(s.stop, 'KMB').then(function (info) { return { id: s.stop, info: info }; });
+                    })).then(function (items) { return { items: items, co: co, st: stt, nlbId: null, nlbDest: null }; });
+                });
+            } else { /* NLB */
+                var nlbId = opt.dataset.nlbRouteId || '';
+                var nlbDest = opt.dataset.destTc || opt.dataset.origTc || route;
+                if (!nlbId) { $('stopList').innerHTML = '<div class="stop-list-empty">無法取得路線ID。</div>'; loadBtn.disabled = false; return; }
+                promise = apiFetch(API.NLB_ROUTE_STOP(nlbId)).then(function (d) {
+                    var stops = d.stops || [];
+                    var items = stops.map(function (s) {
+                        var ntc = s.stopName_zh || s.stopName_c || s.stopId || '';
+                        var nen = s.stopName_en || s.stopName_e || '';
+                        var sid = s.stopId || s.stop || '';
+                        var info = { name_tc: ntc, name_en: nen };
+                        state.stopNameCache['NLB_' + sid] = info;
+                        return { id: sid, info: info };
+                    });
+                    return { items: items, co: 'NLB', st: 1, nlbId: nlbId, nlbDest: nlbDest };
+                });
+            }
+
+            promise.then(function (res) {
+                var listEl = $('stopList');
+                listEl.innerHTML = '';
+                if (!res.items.length) { listEl.innerHTML = '<div class="stop-list-empty">沒有巴士站資料。</div>'; return; }
+                for (var i = 0; i < res.items.length; i++) {
+                    (function (item, result) {
+                        var div = el('div');
+                        div.className = 'stop-item';
+                        div.innerHTML = '<div class="stop-item-name">' + (item.info.name_tc || item.id) + '</div>' +
+                            '<div class="stop-item-sub">' + (item.info.name_en || '') + ' （站號：' + item.id + '）</div>';
+                        div.onclick = function () { addStop(item.id, opt.value, item.info, result.co, result.st, result.nlbId, result.nlbDest); };
+                        listEl.appendChild(div);
+                    })(res.items[i], res);
+                }
+                $('modalTitle').textContent = co === 'NLB'
+                    ? '已選路線：' + route + '（' + (opt.dataset.origTc || '') + '）'
+                    : '已選路線：' + route + '（' + (opt.dataset.origTc || '') + ' ↔ ' + (opt.dataset.destTc || '') + '）';
+            }).catch(function () {
+                $('stopList').innerHTML = '<div class="stop-list-empty">載入錯誤。</div>';
+            }).then(function () {
+                loadBtn.disabled = false;
+            });
+        }
+
+        function addStop(stopId, routeNo, stopInfo, company, serviceType, nlbRouteId, nlbDest) {
+            var dir = company === 'NLB' ? null : state.selectedDir;
+            var sd = {
+                stopId: stopId, routeId: routeNo, nlbRouteId: nlbRouteId || null,
+                direction: dir, company: company || state.selectedCo,
+                serviceType: serviceType || 1, nlbDest: nlbDest || '',
+                stopInfo: stopInfo, altStopName: null
+            };
+            var key = makeStopKey(sd);
+            var found = -1;
+            for (var i = 0; i < state.stops.length; i++) {
+                if (makeStopKey(state.stops[i]) === key) { found = i; break; }
+            }
+            if (found >= 0) state.stops.splice(found, 1);
+            else state.stops.push(sd);
+
+            saveStops();
+            closeModal();
+            updateClearBtn();
+            state.isFirstRender = true;
+            state.renderedRows = {};
+            if (state.stops.length > 0) fetchMultiETA();
+        }
+
+        /* ================================================================
+           DRAG & DROP (pointer-based, compatible with old WebView)
+           ================================================================ */
+        function initDragDrop() {
+            var container = $('busRowsContainer');
+
+            function getY(e) {
+                if (e.touches && e.touches.length) return e.touches[0].clientY;
+                return e.clientY;
+            }
+
+            container.addEventListener('mousedown', onStart);
+            container.addEventListener('touchstart', onStart, false);
+            document.addEventListener('mousemove', onMove);
+            document.addEventListener('touchmove', onMove, false);
+            document.addEventListener('mouseup', onEnd);
+            document.addEventListener('touchend', onEnd);
+            document.addEventListener('touchcancel', onEnd);
+
+            function onStart(e) {
+                if (state.fullscreen) return;
+                var handle = e.target;
+                /* Traverse up to find drag handle */
+                while (handle && !handle.classList.contains('drag-handle')) handle = handle.parentNode;
+                if (!handle) return;
+                var row = handle.parentNode;
+                if (!row || !row.classList.contains('bus-row')) return;
+                e.preventDefault();
+
+                var rect = row.getBoundingClientRect();
+                var placeholder = el('div');
+                placeholder.className = 'drag-placeholder';
+                placeholder.style.height = rect.height + 'px';
+
+                state.dragState = {
+                    row: row,
+                    placeholder: placeholder,
+                    offsetY: getY(e) - rect.top,
+                    rowW: rect.width,
+                    rowH: rect.height
+                };
+
+                row.classList.add('dragging');
+                row.style.width = rect.width + 'px';
+                row.style.height = rect.height + 'px';
+                row.style.left = rect.left + 'px';
+                row.style.top = (getY(e) - state.dragState.offsetY) + 'px';
+
+                row.parentNode.insertBefore(placeholder, row);
+                document.body.appendChild(row);
+                document.body.classList.add('is-dragging');
+                state.isDragging = true;
+            }
+
+            function onMove(e) {
+                if (!state.isDragging || !state.dragState) return;
+                e.preventDefault();
+                var y = getY(e);
+                var ds = state.dragState;
+                ds.row.style.top = (y - ds.offsetY) + 'px';
+
+                var c = $('busRowsContainer');
+                var siblings = c.querySelectorAll('.bus-row, .drag-placeholder');
+                var siblings_arr = Array.prototype.slice.call(siblings);
+                var targetIdx = siblings_arr.length;
+                for (var i = 0; i < siblings_arr.length; i++) {
+                    var sib = siblings_arr[i];
+                    if (sib === ds.placeholder) continue;
+                    var box = sib.getBoundingClientRect();
+                    if (y < box.top + box.height / 2) { targetIdx = i; break; }
+                }
+                var curIdx = siblings_arr.indexOf(ds.placeholder);
+                if (targetIdx !== curIdx) {
+                    ds.placeholder.parentNode && ds.placeholder.parentNode.removeChild(ds.placeholder);
+                    var updated = Array.prototype.slice.call(c.querySelectorAll('.bus-row, .drag-placeholder'));
+                    if (targetIdx >= updated.length) c.appendChild(ds.placeholder);
+                    else c.insertBefore(ds.placeholder, updated[targetIdx]);
+                }
+            }
+
+            function onEnd() {
+                if (!state.isDragging || !state.dragState) return;
+                var ds = state.dragState;
+                var c = $('busRowsContainer');
+                ds.row.classList.remove('dragging');
+                ds.row.style.position = '';
+                ds.row.style.width = '';
+                ds.row.style.height = '';
+                ds.row.style.left = '';
+                ds.row.style.top = '';
+                c.insertBefore(ds.row, ds.placeholder);
+                ds.placeholder.parentNode && ds.placeholder.parentNode.removeChild(ds.placeholder);
+                document.body.classList.remove('is-dragging');
+                state.isDragging = false;
+                state.dragState = null;
+                reorderFromDom();
+            }
+        }
+
+        function reorderFromDom() {
+            var rows = $('busRowsContainer').querySelectorAll('.bus-row');
+            var keyToStop = {};
+            for (var i = 0; i < state.stops.length; i++) {
+                keyToStop[makeStopKey(state.stops[i])] = state.stops[i];
+            }
+            var newOrder = [];
+            for (var j = 0; j < rows.length; j++) {
+                var k = rows[j].dataset.stopKey;
+                if (keyToStop[k]) newOrder.push(keyToStop[k]);
+            }
+            if (newOrder.length === state.stops.length) {
+                state.stops = newOrder;
+                saveStops();
+                state.renderedRows = {};
+                for (var m = 0; m < rows.length; m++) {
+                    var rk = rows[m].dataset.stopKey;
+                    var etaEl = rows[m].querySelector('.eta-cell');
+                    state.renderedRows[rk] = { el: rows[m], etaSig: etaEl ? etaEl.innerHTML : '' };
+                }
+            }
+        }
+
+        /* ================================================================
+           KEYBOARD
+           ================================================================ */
+        document.addEventListener('keydown', function (e) {
+            if (e.keyCode === 27) { /* ESC */
+                closeModal();
+                if (state.fullscreen) toggleFullscreen();
+            }
         });
-    }
 
-    promise.then(function(res) {
-        var listEl = $('stopList');
-        listEl.innerHTML = '';
-        if (!res.items.length) { listEl.innerHTML = '<div class="stop-list-empty">沒有巴士站資料。</div>'; return; }
-        for (var i = 0; i < res.items.length; i++) {
-            (function(item, result) {
-                var div = el('div');
-                div.className = 'stop-item';
-                div.innerHTML = '<div class="stop-item-name">' + (item.info.name_tc || item.id) + '</div>' +
-                    '<div class="stop-item-sub">' + (item.info.name_en || '') + ' （站號：' + item.id + '）</div>';
-                div.onclick = function() { addStop(item.id, opt.value, item.info, result.co, result.st, result.nlbId, result.nlbDest); };
-                listEl.appendChild(div);
-            })(res.items[i], res);
+        /* ================================================================
+           INIT
+           ================================================================ */
+        loadTheme();
+        initDragDrop();
+        setContainerHeight();
+        window.addEventListener('resize', setContainerHeight);
+
+        var hadSaved = loadStopsStorage();
+        if (hadSaved && state.stops.length > 0) {
+            setTimeout(fetchMultiETA, 500);
         }
-        $('modalTitle').textContent = co === 'NLB'
-            ? '已選路線：' + route + '（' + (opt.dataset.origTc || '') + '）'
-            : '已選路線：' + route + '（' + (opt.dataset.origTc || '') + ' ↔ ' + (opt.dataset.destTc || '') + '）';
-    }).catch(function() {
-        $('stopList').innerHTML = '<div class="stop-list-empty">載入錯誤。</div>';
-    }).then(function() {
-        loadBtn.disabled = false;
-    });
-}
-
-function addStop(stopId, routeNo, stopInfo, company, serviceType, nlbRouteId, nlbDest) {
-    var dir = company === 'NLB' ? null : state.selectedDir;
-    var sd = {
-        stopId: stopId, routeId: routeNo, nlbRouteId: nlbRouteId || null,
-        direction: dir, company: company || state.selectedCo,
-        serviceType: serviceType || 1, nlbDest: nlbDest || '',
-        stopInfo: stopInfo, altStopName: null
-    };
-    var key = makeStopKey(sd);
-    var found = -1;
-    for (var i = 0; i < state.stops.length; i++) {
-        if (makeStopKey(state.stops[i]) === key) { found = i; break; }
-    }
-    if (found >= 0) state.stops.splice(found, 1);
-    else state.stops.push(sd);
-
-    saveStops();
-    closeModal();
-    updateClearBtn();
-    state.isFirstRender = true;
-    state.renderedRows = {};
-    if (state.stops.length > 0) fetchMultiETA();
-}
-
-/* ================================================================
-   DRAG & DROP (pointer-based, compatible with old WebView)
-   ================================================================ */
-function initDragDrop() {
-    var container = $('busRowsContainer');
-
-    function getY(e) {
-        if (e.touches && e.touches.length) return e.touches[0].clientY;
-        return e.clientY;
-    }
-
-    container.addEventListener('mousedown', onStart);
-    container.addEventListener('touchstart', onStart, false);
-    document.addEventListener('mousemove', onMove);
-    document.addEventListener('touchmove', onMove, false);
-    document.addEventListener('mouseup', onEnd);
-    document.addEventListener('touchend', onEnd);
-    document.addEventListener('touchcancel', onEnd);
-
-    function onStart(e) {
-        if (state.fullscreen) return;
-        var handle = e.target;
-        /* Traverse up to find drag handle */
-        while (handle && !handle.classList.contains('drag-handle')) handle = handle.parentNode;
-        if (!handle) return;
-        var row = handle.parentNode;
-        if (!row || !row.classList.contains('bus-row')) return;
-        e.preventDefault();
-
-        var rect = row.getBoundingClientRect();
-        var placeholder = el('div');
-        placeholder.className = 'drag-placeholder';
-        placeholder.style.height = rect.height + 'px';
-
-        state.dragState = {
-            row: row,
-            placeholder: placeholder,
-            offsetY: getY(e) - rect.top,
-            rowW: rect.width,
-            rowH: rect.height
-        };
-
-        row.classList.add('dragging');
-        row.style.width  = rect.width + 'px';
-        row.style.height = rect.height + 'px';
-        row.style.left   = rect.left + 'px';
-        row.style.top    = (getY(e) - state.dragState.offsetY) + 'px';
-
-        row.parentNode.insertBefore(placeholder, row);
-        document.body.appendChild(row);
-        document.body.classList.add('is-dragging');
-        state.isDragging = true;
-    }
-
-    function onMove(e) {
-        if (!state.isDragging || !state.dragState) return;
-        e.preventDefault();
-        var y = getY(e);
-        var ds = state.dragState;
-        ds.row.style.top = (y - ds.offsetY) + 'px';
-
-        var c = $('busRowsContainer');
-        var siblings = c.querySelectorAll('.bus-row, .drag-placeholder');
-        var siblings_arr = Array.prototype.slice.call(siblings);
-        var targetIdx = siblings_arr.length;
-        for (var i = 0; i < siblings_arr.length; i++) {
-            var sib = siblings_arr[i];
-            if (sib === ds.placeholder) continue;
-            var box = sib.getBoundingClientRect();
-            if (y < box.top + box.height / 2) { targetIdx = i; break; }
-        }
-        var curIdx = siblings_arr.indexOf(ds.placeholder);
-        if (targetIdx !== curIdx) {
-            ds.placeholder.parentNode && ds.placeholder.parentNode.removeChild(ds.placeholder);
-            var updated = Array.prototype.slice.call(c.querySelectorAll('.bus-row, .drag-placeholder'));
-            if (targetIdx >= updated.length) c.appendChild(ds.placeholder);
-            else c.insertBefore(ds.placeholder, updated[targetIdx]);
-        }
-    }
-
-    function onEnd() {
-        if (!state.isDragging || !state.dragState) return;
-        var ds = state.dragState;
-        var c = $('busRowsContainer');
-        ds.row.classList.remove('dragging');
-        ds.row.style.position = '';
-        ds.row.style.width = '';
-        ds.row.style.height = '';
-        ds.row.style.left = '';
-        ds.row.style.top = '';
-        c.insertBefore(ds.row, ds.placeholder);
-        ds.placeholder.parentNode && ds.placeholder.parentNode.removeChild(ds.placeholder);
-        document.body.classList.remove('is-dragging');
-        state.isDragging = false;
-        state.dragState = null;
-        reorderFromDom();
-    }
-}
-
-function reorderFromDom() {
-    var rows = $('busRowsContainer').querySelectorAll('.bus-row');
-    var keyToStop = {};
-    for (var i = 0; i < state.stops.length; i++) {
-        keyToStop[makeStopKey(state.stops[i])] = state.stops[i];
-    }
-    var newOrder = [];
-    for (var j = 0; j < rows.length; j++) {
-        var k = rows[j].dataset.stopKey;
-        if (keyToStop[k]) newOrder.push(keyToStop[k]);
-    }
-    if (newOrder.length === state.stops.length) {
-        state.stops = newOrder;
-        saveStops();
-        state.renderedRows = {};
-        for (var m = 0; m < rows.length; m++) {
-            var rk = rows[m].dataset.stopKey;
-            var etaEl = rows[m].querySelector('.eta-cell');
-            state.renderedRows[rk] = { el: rows[m], etaSig: etaEl ? etaEl.innerHTML : '' };
-        }
-    }
-}
-
-/* ================================================================
-   KEYBOARD
-   ================================================================ */
-document.addEventListener('keydown', function(e) {
-    if (e.keyCode === 27) { /* ESC */
-        closeModal();
-        if (state.fullscreen) toggleFullscreen();
-    }
-});
-
-/* ================================================================
-   INIT
-   ================================================================ */
-loadTheme();
-initDragDrop();
-setContainerHeight();
-window.addEventListener('resize', setContainerHeight);
-
-var hadSaved = loadStopsStorage();
-if (hadSaved && state.stops.length > 0) {
-    setTimeout(fetchMultiETA, 500);
-}
-</script>
+    </script>
 </body>
+
 </html>
