@@ -16,169 +16,240 @@
         }
 
         body {
-            background-color: #f5f5f5;
-            color: #222;
+            background: linear-gradient(135deg, #e8edf5 0%, #dce3ed 30%, #f0f2f8 60%, #e4e9f2 100%);
+            background-attachment: fixed;
+            color: #1a1a2e;
             font-family: 'Microsoft JhengHei', '微軟正黑體', 'Noto Sans TC', 'PingFang TC', sans-serif;
             min-height: 100vh;
-            overflow-x: hidden
+            overflow-x: hidden;
+            position: relative
+        }
+
+        /* Ambient background orbs for depth */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -20%;
+            left: -10%;
+            width: 60%;
+            height: 60%;
+            background: radial-gradient(ellipse, rgba(66, 165, 245, .12) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            bottom: -15%;
+            right: -8%;
+            width: 50%;
+            height: 50%;
+            background: radial-gradient(ellipse, rgba(25, 118, 210, .08) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0
         }
 
         body.dark-mode {
-            background-color: #0a0e27;
-            color: #fff
+            background: linear-gradient(135deg, #0a0e1a 0%, #0d1225 30%, #0b1020 60%, #0f1428 100%);
+            background-attachment: fixed;
+            color: #e8eaf0
+        }
+
+        body.dark-mode::before {
+            background: radial-gradient(ellipse, rgba(66, 165, 245, .08) 0%, transparent 70%)
+        }
+
+        body.dark-mode::after {
+            background: radial-gradient(ellipse, rgba(100, 180, 255, .05) 0%, transparent 70%)
         }
 
         body.fullscreen-mode {
-            background-color: #fff;
+            background: #fff;
             overflow: hidden
         }
 
         body.dark-mode.fullscreen-mode {
-            background-color: #0d1117
+            background: #0d1117
         }
 
         body.dark-mode .header {
-            background: linear-gradient(135deg, #141a3a, #0d1b3e 50%, #0b1636);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, .5)
+            background: rgba(15, 23, 42, .7);
+            backdrop-filter: blur(24px) saturate(140%);
+            -webkit-backdrop-filter: blur(24px) saturate(140%);
+            box-shadow: 0 4px 32px rgba(0, 0, 0, .5), inset 0 1px 0 rgba(255, 255, 255, .04);
+            border-bottom: 1px solid rgba(255, 255, 255, .06)
         }
 
         body.dark-mode .header-title h1 {
-            color: #fff
+            background: linear-gradient(135deg, #64b5f6, #90caf9, #bbdefb);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
         }
 
         body.dark-mode .header-title .subtitle {
-            color: rgba(255, 255, 255, .75)
+            color: rgba(255, 255, 255, .45)
         }
 
         body.dark-mode .header-time .current-time {
-            color: #fff
+            background: linear-gradient(180deg, #64b5f6, #bbdefb);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
         }
 
         body.dark-mode .header-time .current-date {
-            color: rgba(255, 255, 255, .75)
+            color: rgba(255, 255, 255, .45)
         }
 
         body.dark-mode .controls {
-            background: rgba(255, 255, 255, .05);
-            border-bottom-color: rgba(255, 255, 255, .1)
+            background: rgba(255, 255, 255, .04);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom-color: rgba(255, 255, 255, .08)
         }
 
         body.dark-mode .status-bar {
             background: rgba(255, 255, 255, .03);
-            color: rgba(255, 255, 255, .65);
-            border-bottom-color: rgba(255, 255, 255, .05)
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            color: rgba(255, 255, 255, .55);
+            border-bottom-color: rgba(255, 255, 255, .04)
         }
 
         body.dark-mode .table-header {
-            background: rgba(255, 255, 255, .06);
-            color: rgba(255, 255, 255, .5);
-            border-bottom-color: rgba(255, 255, 255, .12)
+            background: rgba(255, 255, 255, .04);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            color: rgba(255, 255, 255, .4);
+            border-bottom-color: rgba(255, 255, 255, .08)
         }
 
         body.dark-mode .bus-row {
-            background: rgba(255, 255, 255, .02) !important
+            background: rgba(255, 255, 255, .025) !important;
+            border-bottom-color: rgba(255, 255, 255, .04)
         }
 
         body.dark-mode .bus-row:hover {
-            background: rgba(255, 255, 255, .06) !important
+            background: rgba(255, 255, 255, .06) !important;
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px)
         }
 
         body.dark-mode .stop-name {
-            color: rgba(255, 255, 255, .6)
+            color: rgba(255, 255, 255, .45)
         }
 
         body.dark-mode .stop-name-en {
-            color: rgba(255, 255, 255, .35)
+            color: rgba(255, 255, 255, .25)
         }
 
         body.dark-mode .dest-direction {
-            color: #fff
+            color: #e8eaf0
         }
 
         body.dark-mode .eta-na {
-            color: rgba(255, 255, 255, .3)
+            color: rgba(255, 255, 255, .2)
         }
 
         body.dark-mode .btn-toggle-fullscreen,
         body.dark-mode .btn-theme-toggle,
         body.dark-mode .btn-secondary {
-            background: rgba(255, 255, 255, .08);
-            color: rgba(255, 255, 255, .85);
-            border-color: rgba(255, 255, 255, .18)
+            background: rgba(255, 255, 255, .06);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            color: rgba(255, 255, 255, .75);
+            border-color: rgba(255, 255, 255, .1)
         }
 
         body.dark-mode .btn-toggle-fullscreen:hover,
         body.dark-mode .btn-theme-toggle:hover,
         body.dark-mode .btn-secondary:hover {
-            background: rgba(255, 255, 255, .14)
+            background: rgba(255, 255, 255, .12);
+            border-color: rgba(255, 255, 255, .18);
+            box-shadow: 0 2px 12px rgba(66, 165, 245, .12)
         }
 
         body.dark-mode .modal {
-            background: #0d1b3e;
-            color: #fff
+            background: rgba(13, 27, 62, .88);
+            backdrop-filter: blur(24px) saturate(140%);
+            -webkit-backdrop-filter: blur(24px) saturate(140%);
+            color: #e8eaf0;
+            box-shadow: 0 24px 64px rgba(0, 0, 0, .5), 0 0 0 1px rgba(255, 255, 255, .08)
         }
 
         body.dark-mode .modal-header {
-            background: rgba(255, 255, 255, .05);
-            border-bottom-color: rgba(255, 255, 255, .12)
+            background: rgba(255, 255, 255, .04);
+            border-bottom-color: rgba(255, 255, 255, .08)
         }
 
         body.dark-mode .modal-header-title {
-            color: #fff
+            color: #e8eaf0
         }
 
         body.dark-mode .modal-close-btn {
-            color: rgba(255, 255, 255, .7)
+            color: rgba(255, 255, 255, .5);
+            background: rgba(255, 255, 255, .05)
+        }
+
+        body.dark-mode .modal-close-btn:hover {
+            background: rgba(255, 255, 255, .1);
+            color: rgba(255, 255, 255, .8)
         }
 
         body.dark-mode .modal-left {
-            border-right-color: rgba(255, 255, 255, .12)
+            border-right-color: rgba(255, 255, 255, .08)
         }
 
         body.dark-mode .modal-label,
-        body.dark-mode .modal-right-title,
-        body.dark-mode .modal-footer {
-            color: rgba(255, 255, 255, .65)
+        body.dark-mode .modal-right-title {
+            color: rgba(255, 255, 255, .5)
         }
 
         body.dark-mode .modal-footer {
-            background: rgba(255, 255, 255, .05);
-            border-top-color: rgba(255, 255, 255, .12)
+            background: rgba(255, 255, 255, .04);
+            border-top-color: rgba(255, 255, 255, .08);
+            color: rgba(255, 255, 255, .5)
         }
 
         body.dark-mode .modal-route-filter input,
         body.dark-mode #routeSelect {
-            background: rgba(255, 255, 255, .06);
-            color: #fff;
-            border-color: rgba(255, 255, 255, .18)
+            background: rgba(255, 255, 255, .05);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            color: #e8eaf0;
+            border-color: rgba(255, 255, 255, .12)
         }
 
         body.dark-mode #routeSelect option {
             background: #0d1b3e;
-            color: #fff
+            color: #e8eaf0
         }
 
         body.dark-mode .stop-list {
-            border-color: rgba(255, 255, 255, .12);
+            border-color: rgba(255, 255, 255, .08);
             background: rgba(255, 255, 255, .03)
         }
 
         body.dark-mode .stop-list-item:hover {
-            background: rgba(66, 165, 245, .18)
+            background: rgba(66, 165, 245, .15)
         }
 
         body.dark-mode .stop-list-item-main {
-            color: #fff
+            color: #e8eaf0
         }
 
         body.dark-mode .stop-list-item-sub {
-            color: rgba(255, 255, 255, .65)
+            color: rgba(255, 255, 255, .5)
         }
 
         body.dark-mode .direction-button {
-            background: rgba(255, 255, 255, .06);
-            color: rgba(255, 255, 255, .85);
-            border-color: rgba(255, 255, 255, .18)
+            background: rgba(255, 255, 255, .05);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            color: rgba(255, 255, 255, .8);
+            border-color: rgba(255, 255, 255, .12)
         }
 
         body.dark-mode .direction-button:hover {
@@ -186,7 +257,8 @@
         }
 
         body.dark-mode .row-remove-btn {
-            color: rgba(255, 255, 255, .4)
+            color: rgba(255, 255, 255, .25);
+            background: rgba(255, 255, 255, .03)
         }
 
         body.dark-mode .row-remove-btn:hover {
@@ -195,20 +267,20 @@
         }
 
         body.dark-mode .eta-secondary {
-            border-left-color: rgba(255, 255, 255, .15)
+            border-left-color: rgba(255, 255, 255, .1)
         }
 
         body.dark-mode .bus-row .row-accent {
-            opacity: .95
+            opacity: .85
         }
 
         body.dark-mode .stop-name-alt {
-            color: rgba(255, 255, 255, .35);
-            border-top-color: rgba(255, 255, 255, .1)
+            color: rgba(255, 255, 255, .25);
+            border-top-color: rgba(255, 255, 255, .06)
         }
 
         body.dark-mode .stop-name-alt .alt-badge {
-            background: rgba(239, 83, 80, .18);
+            background: rgba(239, 83, 80, .15);
             color: #EF5350
         }
 
@@ -228,11 +300,11 @@
             display: flex;
             flex-direction: column;
             scrollbar-width: none;
-            background: #fff
+            background: linear-gradient(180deg, #f8f9fc 0%, #fff 100%)
         }
 
         body.dark-mode.fullscreen-mode .bus-rows-container {
-            background: #0d1117
+            background: linear-gradient(180deg, #0d1117 0%, #0a0e1a 100%)
         }
 
         body.fullscreen-mode .bus-rows-container::-webkit-scrollbar {
@@ -337,11 +409,11 @@
             left: 20px;
             right: 20px;
             height: 1px;
-            background: linear-gradient(90deg, transparent 0%, rgba(0, 0, 0, .08) 10%, rgba(0, 0, 0, .08) 90%, transparent 100%)
+            background: linear-gradient(90deg, transparent 0%, rgba(0, 0, 0, .06) 10%, rgba(0, 0, 0, .06) 90%, transparent 100%)
         }
 
         body.dark-mode.fullscreen-mode .bus-row::after {
-            background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, .08) 10%, rgba(255, 255, 255, .08) 90%, transparent 100%)
+            background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, .06) 10%, rgba(255, 255, 255, .06) 90%, transparent 100%)
         }
 
         .drag-handle {
@@ -349,7 +421,7 @@
             align-items: center;
             justify-content: center;
             cursor: grab;
-            color: #ccc;
+            color: rgba(0, 0, 0, .2);
             font-size: 18px;
             user-select: none;
             touch-action: none;
@@ -358,56 +430,63 @@
         }
 
         .drag-handle:hover {
-            color: #777
+            color: rgba(0, 0, 0, .45)
         }
 
         .drag-handle:active {
             cursor: grabbing;
-            color: #444
+            color: rgba(0, 0, 0, .6)
         }
 
         body.dark-mode .drag-handle {
-            color: rgba(255, 255, 255, .15)
+            color: rgba(255, 255, 255, .12)
         }
 
         body.dark-mode .drag-handle:hover {
-            color: rgba(255, 255, 255, .45)
+            color: rgba(255, 255, 255, .35)
         }
 
         .bus-row.dragging {
             position: fixed !important;
             z-index: 1000 !important;
             pointer-events: none !important;
-            box-shadow: 0 16px 48px rgba(0, 0, 0, .2), 0 4px 12px rgba(0, 0, 0, .1) !important;
-            opacity: .92 !important;
-            border-radius: 8px !important;
-            border: 2px solid #1976d2 !important;
-            transition: box-shadow .2s !important;
-            will-change: top
+            box-shadow: 0 20px 60px rgba(0, 0, 0, .18), 0 0 0 1px rgba(255, 255, 255, .3) !important;
+            opacity: .94 !important;
+            border-radius: 10px !important;
+            border: 2px solid rgba(25, 118, 210, .5) !important;
+            background: rgba(255, 255, 255, .85) !important;
+            backdrop-filter: blur(16px) saturate(160%);
+            -webkit-backdrop-filter: blur(16px) saturate(160%);
+            will-change: transform
         }
 
         body.dark-mode .bus-row.dragging {
-            box-shadow: 0 16px 48px rgba(0, 0, 0, .5), 0 4px 12px rgba(0, 0, 0, .3) !important;
-            border-color: #42a5f5 !important;
-            background: #151c34 !important
+            box-shadow: 0 20px 60px rgba(0, 0, 0, .5), 0 0 0 1px rgba(255, 255, 255, .08) !important;
+            border-color: rgba(66, 165, 245, .5) !important;
+            background: rgba(20, 30, 55, .9) !important;
+            backdrop-filter: blur(16px) saturate(140%);
+            -webkit-backdrop-filter: blur(16px) saturate(140%)
         }
 
         .drag-placeholder {
-            border: 2px dashed #90caf9;
-            border-radius: 6px;
-            background: rgba(25, 118, 210, .06);
-            transition: height .15s ease
+            border: 2px dashed rgba(66, 165, 245, .4);
+            border-radius: 8px;
+            background: rgba(66, 165, 245, .06);
+            backdrop-filter: blur(2px);
+            -webkit-backdrop-filter: blur(2px)
         }
 
         body.dark-mode .drag-placeholder {
-            background: rgba(66, 165, 245, .06);
-            border-color: rgba(66, 165, 245, .3)
+            background: rgba(66, 165, 245, .04);
+            border-color: rgba(66, 165, 245, .25)
         }
 
         .modal-backdrop {
             position: fixed;
             inset: 0;
-            background: rgba(0, 0, 0, .45);
+            background: rgba(0, 0, 0, .35);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
             display: none;
             align-items: center;
             justify-content: center;
@@ -419,40 +498,53 @@
         }
 
         .modal {
-            background: #fff;
-            border-radius: 12px;
+            background: rgba(255, 255, 255, .85);
+            backdrop-filter: blur(24px) saturate(160%);
+            -webkit-backdrop-filter: blur(24px) saturate(160%);
+            border-radius: 16px;
             max-width: 960px;
             width: 94%;
             max-height: 82vh;
             display: flex;
             flex-direction: column;
-            box-shadow: 0 16px 40px rgba(0, 0, 0, .3);
+            box-shadow: 0 24px 64px rgba(0, 0, 0, .18), 0 0 0 1px rgba(255, 255, 255, .4);
             overflow: hidden
         }
 
         .modal-header {
             padding: 14px 20px;
-            border-bottom: 1px solid #e0e0e0;
+            border-bottom: 1px solid rgba(0, 0, 0, .08);
             display: flex;
             align-items: center;
             justify-content: space-between;
-            background: #fafafa;
+            background: rgba(255, 255, 255, .5);
             flex-shrink: 0
         }
 
         .modal-header-title {
             font-size: 18px;
             font-weight: 600;
-            color: #333
+            color: #1a1a2e
         }
 
         .modal-close-btn {
             border: none;
-            background: transparent;
-            font-size: 22px;
+            background: rgba(0, 0, 0, .05);
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            font-size: 18px;
             cursor: pointer;
-            color: #757575;
-            padding: 4px 8px
+            color: #888;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all .2s
+        }
+
+        .modal-close-btn:hover {
+            background: rgba(0, 0, 0, .1);
+            color: #444
         }
 
         .modal-body {
@@ -472,7 +564,7 @@
         }
 
         .modal-left {
-            border-right: 1px solid #eee;
+            border-right: 1px solid rgba(0, 0, 0, .08);
             padding-right: 12px
         }
 
@@ -482,7 +574,7 @@
 
         .modal-label {
             font-size: 14px;
-            color: #616161;
+            color: #777;
             margin-bottom: 2px
         }
 
@@ -493,11 +585,15 @@
         }
 
         .modal-route-filter input {
-            padding: 6px 10px;
-            border-radius: 6px;
-            border: 1px solid #cfcfcf;
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(0, 0, 0, .12);
             font-size: 14px;
-            font-family: inherit
+            font-family: inherit;
+            background: rgba(255, 255, 255, .6);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            transition: border-color .2s, box-shadow .2s
         }
 
         .modal-route-filter input:focus {
@@ -508,12 +604,13 @@
 
         #routeSelect {
             width: 100%;
-            border-radius: 6px;
-            border: 1px solid #cfcfcf;
-            padding: 4px;
+            border-radius: 8px;
+            border: 1px solid rgba(0, 0, 0, .12);
+            padding: 6px;
             font-size: 14px;
             min-height: 200px;
-            font-family: inherit
+            font-family: inherit;
+            background: rgba(255, 255, 255, .5)
         }
 
         .direction-buttons {
@@ -523,13 +620,15 @@
 
         .direction-button {
             flex: 1;
-            padding: 6px 8px;
+            padding: 8px 10px;
             font-size: 13px;
             border-radius: 999px;
-            border: 1px solid #bdbdbd;
-            background: #fafafa;
+            border: 1px solid rgba(0, 0, 0, .12);
+            background: rgba(255, 255, 255, .5);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
             cursor: pointer;
-            color: #424242;
+            color: #555;
             transition: all .2s;
             font-family: inherit
         }
@@ -541,18 +640,25 @@
         }
 
         .direction-button:hover {
-            background: #e0e0e0
+            background: rgba(255, 255, 255, .75)
         }
 
         .modal-load-stops-btn {
-            padding: 7px 14px;
-            border-radius: 6px;
+            padding: 8px 16px;
+            border-radius: 8px;
             border: none;
-            background: #1976d2;
+            background: linear-gradient(135deg, #1976d2, #42a5f5);
             color: #fff;
             font-size: 14px;
             cursor: pointer;
-            font-family: inherit
+            font-family: inherit;
+            transition: all .2s;
+            box-shadow: 0 2px 8px rgba(25, 118, 210, .3)
+        }
+
+        .modal-load-stops-btn:hover {
+            box-shadow: 0 4px 16px rgba(25, 118, 210, .4);
+            transform: translateY(-1px)
         }
 
         .modal-load-stops-btn:disabled {
@@ -562,17 +668,18 @@
 
         .modal-right-title {
             font-size: 14px;
-            color: #616161
+            color: #777
         }
 
         .stop-list {
-            border-radius: 6px;
-            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            border: 1px solid rgba(0, 0, 0, .1);
             padding: 4px;
             flex: 1;
             overflow-y: auto;
             min-height: 200px;
-            max-height: 380px
+            max-height: 380px;
+            background: rgba(255, 255, 255, .4)
         }
 
         .stop-list-item {
@@ -583,17 +690,17 @@
         }
 
         .stop-list-item:hover {
-            background: #e3f2fd
+            background: rgba(66, 165, 245, .12)
         }
 
         .stop-list-item-main {
             font-size: 14px;
-            color: #212121
+            color: #1a1a2e
         }
 
         .stop-list-item-sub {
             font-size: 12px;
-            color: #757575;
+            color: #888;
             margin-top: 1px
         }
 
@@ -605,10 +712,10 @@
 
         .modal-footer {
             padding: 8px 20px 10px;
-            border-top: 1px solid #eee;
+            border-top: 1px solid rgba(0, 0, 0, .08);
             font-size: 12px;
-            color: #9e9e9e;
-            background: #fafafa;
+            color: #999;
+            background: rgba(255, 255, 255, .5);
             flex-shrink: 0
         }
 
@@ -619,13 +726,15 @@
         }
 
         .company-btn {
-            padding: 5px 14px;
+            padding: 6px 16px;
             font-size: 13px;
             border-radius: 999px;
-            border: 1px solid #bdbdbd;
-            background: #fafafa;
+            border: 1px solid rgba(0, 0, 0, .12);
+            background: rgba(255, 255, 255, .5);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
             cursor: pointer;
-            color: #424242;
+            color: #555;
             transition: all .2s;
             font-weight: 600;
             font-family: inherit
@@ -638,13 +747,15 @@
         }
 
         .company-btn:hover:not(.active) {
-            background: #e0e0e0
+            background: rgba(255, 255, 255, .75)
         }
 
         body.dark-mode .company-btn {
-            background: rgba(255, 255, 255, .06);
-            color: rgba(255, 255, 255, .85);
-            border-color: rgba(255, 255, 255, .18)
+            background: rgba(255, 255, 255, .05);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            color: rgba(255, 255, 255, .8);
+            border-color: rgba(255, 255, 255, .12)
         }
 
         body.dark-mode .company-btn:hover:not(.active) {
@@ -652,38 +763,81 @@
         }
 
         .header {
-            background: linear-gradient(135deg, #fff, #f3f3f3 40%, #e0e0e0);
-            padding: 20px 40px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            padding: 24px 44px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, .08);
-            position: sticky;
-            top: 0;
-            z-index: 100
+            background: linear-gradient(135deg,
+                    rgba(235, 245, 255, .85) 0%,
+                    rgba(220, 238, 255, .8) 25%,
+                    rgba(245, 249, 255, .88) 50%,
+                    rgba(210, 232, 252, .8) 75%,
+                    rgba(235, 245, 255, .85) 100%);
+            background-size: 400% 400%;
+            animation: headerGradient 12s ease infinite;
+            backdrop-filter: blur(24px) saturate(160%);
+            -webkit-backdrop-filter: blur(24px) saturate(160%);
+            box-shadow:
+                0 4px 30px rgba(66, 165, 245, .1),
+                0 1px 0 rgba(255, 255, 255, .6) inset,
+                0 -1px 0 rgba(255, 255, 255, .4) inset;
+            border-bottom: 1px solid rgba(66, 165, 245, .12)
+        }
+
+        @keyframes headerGradient {
+            0%,
+            100% {
+                background-position: 0% 50%
+            }
+
+            25% {
+                background-position: 100% 0%
+            }
+
+            50% {
+                background-position: 100% 100%
+            }
+
+            75% {
+                background-position: 0% 100%
+            }
         }
 
         .header-title {
             display: flex;
             align-items: center;
-            gap: 20px
+            gap: 18px
         }
 
         .header-title .icon {
-            font-size: 48px
+            font-size: 52px;
+            filter: drop-shadow(0 4px 8px rgba(66, 165, 245, .2));
+            transition: transform .3s ease
+        }
+
+        .header-title:hover .icon {
+            transform: scale(1.08)
         }
 
         .header-title h1 {
-            font-size: 38px;
-            font-weight: 700;
-            letter-spacing: 4px;
-            color: #333
+            font-size: 36px;
+            font-weight: 800;
+            letter-spacing: 3px;
+            background: linear-gradient(135deg, #1565c0, #1e88e5, #42a5f5);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
         }
 
         .header-title .subtitle {
-            font-size: 15px;
-            color: #616161;
-            margin-top: 4px
+            font-size: 14px;
+            font-weight: 500;
+            color: #5a7a9a;
+            margin-top: 2px;
+            letter-spacing: 1px
         }
 
         .header-time {
@@ -691,43 +845,59 @@
             display: flex;
             flex-direction: column;
             align-items: flex-end;
-            gap: 6px
+            gap: 4px
         }
 
         .header-time .current-time {
-            font-size: 48px;
-            font-weight: 700;
+            font-size: 52px;
+            font-weight: 800;
             font-variant-numeric: tabular-nums;
-            color: #212121
+            letter-spacing: 1px;
+            background: linear-gradient(180deg, #1565c0, #42a5f5);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1
         }
 
         .header-time .current-date {
-            font-size: 17px;
-            color: #757575
+            font-size: 15px;
+            font-weight: 500;
+            color: #5a7a9a;
+            letter-spacing: .5px
         }
 
         .btn-toggle-fullscreen,
         .btn-theme-toggle {
-            padding: 6px 16px;
-            font-size: 14px;
+            padding: 7px 18px;
+            font-size: 13px;
+            font-weight: 600;
             border-radius: 999px;
-            border: 1px solid #bdbdbd;
-            background: #fff;
-            color: #424242;
+            border: 1px solid rgba(66, 165, 245, .2);
+            background: rgba(255, 255, 255, .65);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            color: #1565c0;
             cursor: pointer;
-            transition: all .2s;
-            font-family: inherit
+            transition: all .25s ease;
+            font-family: inherit;
+            letter-spacing: .5px
         }
 
         .btn-toggle-fullscreen:hover,
         .btn-theme-toggle:hover {
-            background: #e0e0e0
+            background: rgba(255, 255, 255, .9);
+            border-color: rgba(66, 165, 245, .4);
+            box-shadow: 0 2px 12px rgba(66, 165, 245, .15);
+            transform: translateY(-1px)
         }
 
         .btn-secondary {
-            background: #e3f2fd;
-            color: #424242;
-            border: 1px solid #bdbdbd;
+            background: rgba(255, 255, 255, .6);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            color: #444;
+            border: 1px solid rgba(0, 0, 0, .12);
             padding: 8px 18px;
             font-size: 15px;
             border-radius: 8px;
@@ -737,17 +907,20 @@
         }
 
         .btn-secondary:hover {
-            background: #bbdefb
+            background: rgba(255, 255, 255, .85);
+            border-color: rgba(0, 0, 0, .18)
         }
 
         .controls {
-            background: #fff;
+            background: rgba(255, 255, 255, .55);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             padding: 14px 40px;
             display: flex;
             gap: 14px;
             align-items: center;
             flex-wrap: wrap;
-            border-bottom: 1px solid #e0e0e0
+            border-bottom: 1px solid rgba(0, 0, 0, .06)
         }
 
         .controls button {
@@ -774,14 +947,16 @@
         }
 
         .status-bar {
-            background: #fafafa;
+            background: rgba(255, 255, 255, .45);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
             padding: 9px 40px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             font-size: 14px;
-            color: #757575;
-            border-bottom: 1px solid #e0e0e0
+            color: #666;
+            border-bottom: 1px solid rgba(0, 0, 0, .04)
         }
 
         .status-bar .status-indicator {
@@ -824,13 +999,15 @@
             display: grid;
             grid-template-columns: 32px 1fr 2fr 1fr 1.8fr 60px;
             padding: 12px 32px;
-            background: #f0f0f0;
+            background: rgba(255, 255, 255, .5);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
             font-size: 13px;
             font-weight: 700;
-            color: #888;
+            color: #999;
             text-transform: uppercase;
             letter-spacing: 3px;
-            border-bottom: 2px solid #ddd;
+            border-bottom: 1px solid rgba(0, 0, 0, .08);
             position: sticky;
             top: 100px;
             z-index: 50
@@ -851,7 +1028,7 @@
             max-height: calc(100vh - 280px);
             overflow-y: auto;
             scrollbar-width: thin;
-            scrollbar-color: #bdbdbd transparent;
+            scrollbar-color: rgba(0, 0, 0, .15) transparent;
             position: relative
         }
 
@@ -860,7 +1037,7 @@
         }
 
         .bus-rows-container::-webkit-scrollbar-thumb {
-            background: #bdbdbd;
+            background: rgba(0, 0, 0, .15);
             border-radius: 3px
         }
 
@@ -876,10 +1053,13 @@
             display: grid;
             grid-template-columns: 32px 1fr 2fr 1fr 1.8fr 60px;
             padding: 16px 32px;
-            background: #fff;
+            background: rgba(255, 255, 255, .45);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
             align-items: center;
-            border-bottom: 1px solid rgba(0, 0, 0, .06);
-            position: relative
+            border-bottom: 1px solid rgba(0, 0, 0, .04);
+            position: relative;
+            transition: background .2s ease, backdrop-filter .2s ease
         }
 
         body.dark-mode .bus-row {
@@ -904,11 +1084,15 @@
         }
 
         .bus-row:hover {
-            background: #f8fafc
+            background: rgba(255, 255, 255, .7);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px)
         }
 
         body.dark-mode .bus-row:hover {
-            background: rgba(255, 255, 255, .05) !important
+            background: rgba(255, 255, 255, .06) !important;
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px)
         }
 
         /* ── Company accent bar ──────────────────────────────
@@ -1047,14 +1231,14 @@
         .dest-direction {
             font-size: 34px;
             font-weight: 700;
-            color: #111;
+            color: #1a1a2e;
             line-height: 1.1
         }
 
         .stop-name {
             font-size: 14px;
             font-weight: 500;
-            color: #888;
+            color: #777;
             line-height: 1.2
         }
 
@@ -1070,7 +1254,7 @@
             color: #aaa;
             margin-top: 3px;
             padding-top: 3px;
-            border-top: 1px dashed #e0e0e0
+            border-top: 1px dashed rgba(0, 0, 0, .08)
         }
 
         .stop-name-alt .alt-badge {
@@ -1112,8 +1296,10 @@
             font-weight: 700;
             letter-spacing: 1px;
             padding: 5px 12px;
-            border-radius: 6px;
-            white-space: nowrap
+            border-radius: 8px;
+            white-space: nowrap;
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px)
         }
 
         .company-tag.ctb {
@@ -1229,7 +1415,7 @@
             flex-direction: column;
             justify-content: center;
             gap: 5px;
-            border-left: 2px solid #e0e0e0;
+            border-left: 2px solid rgba(0, 0, 0, .08);
             padding-left: 14px;
             min-width: 60px
         }
@@ -1336,11 +1522,11 @@
             width: 34px;
             height: 34px;
             border: none;
-            background: transparent;
+            background: rgba(0, 0, 0, .04);
             border-radius: 50%;
             cursor: pointer;
             font-size: 18px;
-            color: #bbb;
+            color: rgba(0, 0, 0, .3);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -1348,13 +1534,19 @@
         }
 
         .row-remove-btn:hover {
-            background: rgba(244, 67, 54, .1);
+            background: rgba(244, 67, 54, .12);
             color: #e53935
         }
 
         .message-container {
             text-align: center;
-            padding: 80px 40px
+            padding: 80px 40px;
+            background: rgba(255, 255, 255, .3);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            border-radius: 16px;
+            margin: 40px auto;
+            max-width: 500px
         }
 
         .message-container .icon {
@@ -1364,12 +1556,12 @@
 
         .message-container .text {
             font-size: 26px;
-            color: #616161
+            color: #555
         }
 
         .message-container .subtext {
             font-size: 17px;
-            color: #9e9e9e;
+            color: #999;
             margin-top: 10px
         }
 
@@ -2221,7 +2413,7 @@
         /* ═══════════════════════════════════════════
            DRAG & DROP
         ═══════════════════════════════════════════ */
-        let isDragging = false, dragState = null;
+        let isDragging = false, dragState = null, dragRafId = null;
         function initDragDrop() {
             const c = document.getElementById('busRowsContainer');
             c.addEventListener('mousedown', onDragStart);
@@ -2240,7 +2432,7 @@
             e.preventDefault();
             const rect = row.getBoundingClientRect();
             const ph = document.createElement('div'); ph.className = 'drag-placeholder'; ph.style.height = rect.height + 'px';
-            dragState = { row, placeholder: ph, offsetY: getPointerY(e) - rect.top, rowWidth: rect.width, rowHeight: rect.height };
+            dragState = { row, placeholder: ph, offsetY: getPointerY(e) - rect.top, rowWidth: rect.width, rowHeight: rect.height, lastY: getPointerY(e) };
             row.classList.add('dragging');
             row.style.width = rect.width + 'px'; row.style.height = rect.height + 'px';
             row.style.left = rect.left + 'px'; row.style.top = (getPointerY(e) - dragState.offsetY) + 'px';
@@ -2249,17 +2441,35 @@
         }
         function onDragMove(e) {
             if (!isDragging || !dragState) return; e.preventDefault();
-            const y = getPointerY(e); const { row, placeholder } = dragState;
-            row.style.top = (y - dragState.offsetY) + 'px';
-            const container = document.getElementById('busRowsContainer');
-            const siblings = [...container.querySelectorAll('.bus-row,.drag-placeholder')];
-            let ti = siblings.length;
-            for (let i = 0; i < siblings.length; i++) { if (siblings[i] === placeholder) continue; const box = siblings[i].getBoundingClientRect(); if (y < box.top + box.height / 2) { ti = i; break; } }
-            const ci = siblings.indexOf(placeholder);
-            if (ti !== ci) { placeholder.remove(); const upd = [...container.querySelectorAll('.bus-row,.drag-placeholder')]; if (ti >= upd.length) container.appendChild(placeholder); else container.insertBefore(placeholder, upd[ti]); }
+            dragState.lastY = getPointerY(e);
+            if (!dragRafId) {
+                dragRafId = requestAnimationFrame(() => {
+                    dragRafId = null;
+                    if (!isDragging || !dragState) return;
+                    const y = dragState.lastY;
+                    const { row, placeholder } = dragState;
+                    row.style.top = (y - dragState.offsetY) + 'px';
+                    const container = document.getElementById('busRowsContainer');
+                    const siblings = [...container.querySelectorAll('.bus-row,.drag-placeholder')];
+                    let ti = siblings.length;
+                    for (let i = 0; i < siblings.length; i++) {
+                        if (siblings[i] === placeholder) continue;
+                        const box = siblings[i].getBoundingClientRect();
+                        if (y < box.top + box.height / 2) { ti = i; break; }
+                    }
+                    const ci = siblings.indexOf(placeholder);
+                    if (ti !== ci) {
+                        placeholder.remove();
+                        const upd = [...container.querySelectorAll('.bus-row,.drag-placeholder')];
+                        if (ti >= upd.length) container.appendChild(placeholder);
+                        else container.insertBefore(placeholder, upd[ti]);
+                    }
+                });
+            }
         }
         function onDragEnd() {
             if (!isDragging || !dragState) return;
+            if (dragRafId) { cancelAnimationFrame(dragRafId); dragRafId = null; }
             const { row, placeholder } = dragState; const container = document.getElementById('busRowsContainer');
             row.classList.remove('dragging');
             row.style.position = ''; row.style.width = ''; row.style.height = ''; row.style.left = ''; row.style.top = ''; row.style.zIndex = '';
@@ -2289,4 +2499,4 @@
     </script>
 </body>
 
-</html>
+</html> 
